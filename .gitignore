@@ -1,0 +1,6 @@
+*.bin
+*.ini
+*.log
+test_*
+*.test
+

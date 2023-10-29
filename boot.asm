@@ -2,33 +2,43 @@
 mov ax, 3
 int 0x10
 GPU equ 0xb800
-
 xchg bx, bx ; 断点
 
-; 注册系统调用内中断
-mov word [0x80 * 4], print ; 段偏移
-mov word [0x80 * 4 + 2], 0 ; 段基址
-; ---
-
-int 0x80
+mov bx, 5
+mov dh, 'A'; flash参数
+loop_switch:
+    call flash
+    jmp loop_switch
 
 jmp $
 
-print:
+flash:
     push ax
     push es
-    push di
+    push bx 
+    push dx ; save context
 
     mov ax, GPU
-    mov es, ax
-    mov di, 0
-    mov byte [es:di], 'H'
+    mov es, ax ; 显卡段基址写入es
 
+    shl bx, 1; 取图形界面的第dx个字符
+    mov dl, [es:bx]
+    cmp dl, ' '
 
-    pop di
-    pop es
-    pop ax
-    ret 
+    jz .switch_char
+    ; switch empty
+    mov byte [es:bx], ' '
+    jmp .return
+
+    .switch_char:
+        mov [es:bx], dh; dh为参数
+    .return:
+        pop dx
+        pop bx
+        pop es
+        pop ax  ; restore context
+
+        ret
 
 times 510 - ($-$$) db 0
 dw 0xaa55

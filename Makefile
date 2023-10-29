@@ -15,6 +15,9 @@ run: $(IMG)
 %.bin: src/%.asm
 	$(CXX) -o $@ $<
 
+	
+
 .PHONY: clean
 clean:
 	rm -rf *.bin *.o *.lock *.ini
+

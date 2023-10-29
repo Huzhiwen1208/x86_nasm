@@ -1,6 +1,6 @@
 TARGET=boot.bin
-IMG=master.img
-OBJ=boot.asm
+IMG=image/master.img
+OBJ=src/boot.asm
 CXX=nasm
 
 $(TARGET): $(OBJ)
@@ -10,9 +10,9 @@ $(IMG): $(TARGET)
 	dd if=$< of=$@ bs=512 count=1 conv=notrunc
 
 run: $(IMG)
-	bochs -q -f bochsrc -unlock
+	bochs -q -f bochs/bochsrc -unlock
 
-%.bin: %.asm
+%.bin: src/%.asm
 	$(CXX) -o $@ $<
 
 .PHONY: clean

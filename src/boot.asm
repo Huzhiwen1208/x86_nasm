@@ -1,62 +1,108 @@
-; 1. 时钟中断处理函数注册
-; 2. 打开8259的中断屏蔽字
-; 3. 打开CPU的中断允许标志IF=1
-; 4. 处理完中断要表明已处理完此次中断，方便下次中断触发，否则不会触发下次中断
 [org 0x7c00]
+
 mov ax, 3
-int 0x10
-GPU equ 0xb800
-xchg bx, bx ; 断点
+int 0x10 ; 将显示模式设置成文本模式, 清空显示器
 
-mov dx, 0x1f2
-mov al, 1
-out dx, al; 设置扇区数量为al: byte [0x1f2]=1
-
-; 设置扇区号为0
-mov al, 0
-inc dx 
-out dx, al
-
-inc dx
-out dx, al
-
-inc dx
-out dx, al
-
-inc dx
-mov al, 0b11100000; 低四位为扇区号使用
-out dx, al
-
-inc dx
-mov al, 0x20
-out dx, al; 设置读硬盘模式
-
-_check_disk_state:
-    nop
-    nop 
-    nop
-    
-    in al, dx
-    test al, 0x80; 0x80为忙标志位
-    jnz _check_disk_state; 忙，继续检查
-
-mov ax, 0x100
+mov ax, 0
+mov ds, ax
 mov es, ax
-mov di, 0
-mov dx, 0x1f0; 设置读端口
+mov ss, ax
+mov sp, 0x7c00 ; 初始化堆栈
 
-_read:
-    nop
-    nop
-    nop
+mov edi, 0x1000; 32位架构，将磁盘内容存在内存的
+mov ecx, 2; 扇区起始位置
+mov bl, 4; 扇区数量
+call read_disk
 
-    in ax, dx
-    mov [es:di], ax; 写入0x100段
-    add di, 2
-    cmp di, 512; 是否读取一整块了？
-    jnz _read; 没有读取一整块，继续读取
+; xchg bx, bx;
 
-jmp $
+jmp 0:0x1000; 跳转到 loader
 
-times 510 - ($-$$) db 0
-dw 0xaa55
+; 0 -> 0x1000
+
+read_disk:
+    ; 读取硬盘
+    ; edi - 存储内存位置
+    ; ecx - 存储起始的扇区位置
+    ; bl - 存储扇区数量
+    pushad; ax, cx, dx, bx, sp, bp, si, di
+    ; pushad; ax, cx, dx, bx, sp, bp, si, di
+    ; pusha 16位寄存器， pushad， 32位寄存器
+
+    mov dx, 0x1f2
+    mov al, bl
+    out dx, al; 设置扇区数量
+
+    ; 将ecx中的32位拆解成 【4,4,8,8,8】
+    mov al, cl
+    inc dx; 0x1f3
+    out dx, al; 起始扇区位置低八位
+
+    shr ecx, 8
+    mov al, cl
+    inc dx; 0x1f4
+    out dx, al; 起始扇区位置中八位
+
+    shr ecx, 8
+    mov al, cl
+    inc dx; 0x1f5
+    out dx, al; 起始扇区位置高八位
+
+    shr ecx, 8
+    and cl, 0b1111
+
+    inc dx; 0x1f6
+    mov al, 0b1110_0000
+    or al, cl
+    out dx, al
+
+    inc dx; 0x1f7
+    mov al, 0x20; 读硬盘模式
+    out dx, al
+
+    xor ecx, ecx
+    mov cl, bl
+
+.read:
+    push cx
+    call .waits
+    call .reads
+    pop cx 
+    loop .read
+
+    popad
+    ; popa
+
+    ret
+
+
+.waits:
+    mov dx, 0x1f7
+    .check:
+        nop
+        nop
+        nop ; 一点延迟
+
+        in al, dx
+        and al, 0b1000_1000
+        cmp al, 0b0000_1000
+        jnz .check
+    ret
+
+.reads:
+    mov dx, 0x1f0
+    mov cx, 256; 一个扇区 256 个字
+    .readw:
+        nop
+        nop
+        nop
+
+        in ax, dx
+        mov [edi], ax
+        add edi, 2
+
+        loop .readw
+    ret
+
+times 510 - ($ - $$) db 0
+db 0x55, 0xaa

@@ -9,14 +9,15 @@ mov es, ax
 mov ss, ax
 mov sp, 0x7c00 ; 初始化堆栈
 
-mov edi, 0x1000; 32位架构，将磁盘内容存在内存的
+; read_disk 传参
+mov edi, 0x500; 32位架构，将磁盘内容存在内存的0x1000位置
 mov ecx, 2; 扇区起始位置
 mov bl, 4; 扇区数量
 call read_disk
 
 ; xchg bx, bx;
 
-jmp 0:0x1000; 跳转到 loader
+jmp 0:0x500; 跳转到 loader
 
 ; 0 -> 0x1000
 

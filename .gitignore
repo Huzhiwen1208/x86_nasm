@@ -3,4 +3,4 @@
 *.log
 test_*
 *.test
-
+*.o

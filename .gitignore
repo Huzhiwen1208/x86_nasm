@@ -5,3 +5,5 @@ test_*
 *.test
 *.o
 *.elf
+target
+image/

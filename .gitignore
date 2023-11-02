@@ -4,3 +4,4 @@
 test_*
 *.test
 *.o
+*.elf

@@ -13,5 +13,5 @@ void kernel_init() {
             printf("Kernel init done.\n");
         }
     }
-    assert(2 == 2);
+    assert(2 == 3);
 }

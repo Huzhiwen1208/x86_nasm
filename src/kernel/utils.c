@@ -409,7 +409,7 @@ int println(const char *fmt, ...)
 // assert utils ------
 void assertion_failure(char *exp, char *file, char *base, int line)
 {
-    printf("Assertion: %s failed!, %s:%d, %s, %d \n", exp, file, line, base);
+    printf("Assertion: %s failed!, %s:%d\n", exp, file, line);
 
     while (1);
 }

@@ -6,13 +6,15 @@ TARGET=src/target
 # -mno-sse is nessary in macos, not using high level instruction or register
 KernelLdFlags=-m elf_i386 -static
 KernelGccFlags=-m32 -fno-builtin -fno-stack-protector -mno-sse
-KernelGccFlags+=-nostdinc -nostdlib -fno-pic -fno-pie
+KernelGccFlags+=-nostdinc -nostdlib -fno-pic -fno-pie -g
 
 BootLoader=src/bootloader
 KernelPath=src/kernel
 ELFKernel=$(TARGET)/kernel/os.elf
 NakedKernel=$(TARGET)/kernel/os.bin
-KernelOBJ=$(TARGET)/kernel/entry.o $(TARGET)/kernel/main.o
+KernelSourceFile=$(wildcard $(KernelPath)/*.c) $(wildcard $(KernelPath)/*.asm)
+KernelOBJ=$(patsubst $(KernelPath)/%.asm, $(TARGET)/kernel/%.o, $(filter %.asm, $(KernelSourceFile)))
+KernelOBJ+=$(patsubst $(KernelPath)/%.c, $(TARGET)/kernel/%.o, $(filter %.c, $(KernelSourceFile)))
 ENTRYPOINT=0x7e00
 
 SourceCFile=$(KernelPath)/main.c
@@ -22,10 +24,12 @@ OBJFile=test/obj.o
 EXEFile=test/exe.elf
 
 run: build
-	bochs -q -f bochs/bochsrc -unlock
+	# bochs -q -f bochs/bochsrc -unlock
+	qemu-system-i386 -m 32M -boot c -hda image/master.img
 
-build: clean $(IMG)
+build: $(TARGET) $(IMG)
 
+.PHONY: $(TARGET)
 $(TARGET):
 ifeq ($(wildcard $(TARGET)),)
 	@mkdir -p $(TARGET)/bootloader
@@ -34,19 +38,19 @@ endif
 
 # test -----
 .PHONY: test
-test: clean $(EXEFile)
+	test: clean $(EXEFile)
 
-$(PreCompiledFile): $(SourceCFile)
-	$(GCC) -m32 -E $(SourceCFile) -I $(KernelPath) > $(PreCompiledFile)
+	$(PreCompiledFile): $(SourceCFile)
+		$(GCC) -m32 -E $(SourceCFile) -I $(KernelPath) > $(PreCompiledFile)
 
-$(CompiledFile): $(PreCompiledFile)
-	$(GCC) -m32 -mno-sse -S -o $(CompiledFile) $(PreCompiledFile)
+	$(CompiledFile): $(PreCompiledFile)
+		$(GCC) -m32 -mno-sse -S -o $(CompiledFile) $(PreCompiledFile)
 
-$(OBJFile): $(CompiledFile)
-	x86_64-elf-as --32 -o $(OBJFile) $(CompiledFile)
+	$(OBJFile): $(CompiledFile)
+		x86_64-elf-as --32 -o $(OBJFile) $(CompiledFile)
 
-$(EXEFile): $(OBJFile)
-	ld.lld $(KernelLdFlags) -e kernel_init -o $@ $(OBJFile)
+	$(EXEFile): $(OBJFile)
+		ld.lld $(KernelLdFlags) -e kernel_init -o $@ $(OBJFile)
 # ------ test done
 
 # .c, .asm ---> .o ------
@@ -54,7 +58,7 @@ $(TARGET)/kernel/%.o: $(KernelPath)/%.c
 	$(GCC) $(KernelGccFlags) -c -o $@ $<
 
 $(TARGET)/kernel/%.o: $(KernelPath)/%.asm
-	$(CXX) -f elf32 -o $@ $<
+	$(CXX) -f elf32 -g -o $@ $<
 # ----- .c, .asm ---> .o
 
 # bootloader  -------
@@ -65,17 +69,17 @@ $(TARGET)/bootloader/%.bin: $(BootLoader)/%.asm
 # kernel made ----- 
 # replace ld, objcopy in linux:binutils with ld.lld, llvm-objcopy in macos:llvm
 $(ELFKernel): $(KernelOBJ)
-	ld.lld -m elf_i386 -static -Ttext $(ENTRYPOINT) -o $@ $^
+	ld.lld -m elf_i386 -static -Ttext $(ENTRYPOINT) $^ -o $@
 $(NakedKernel): $(ELFKernel)
 	llvm-objcopy -O binary $< $@
 # ------ kernel made
 
 # img made --------
-$(IMG): $(TARGET) $(TARGET)/bootloader/boot.bin $(TARGET)/bootloader/loader.bin \
+$(IMG): $(TARGET)/bootloader/boot.bin $(TARGET)/bootloader/loader.bin \
 	$(NakedKernel) create_img
-	dd if=$(word 2, $^) of=$@ bs=512 count=1 conv=notrunc
-	dd if=$(word 3, $^) of=$@ bs=512 count=10 seek=2 conv=notrunc
-	dd if=$(word 4, $^) of=$@ bs=512 count=200 seek=12 conv=notrunc
+	dd if=$(word 1, $^) of=$@ bs=512 count=1 conv=notrunc
+	dd if=$(word 2, $^) of=$@ bs=512 count=10 seek=2 conv=notrunc
+	dd if=$(word 3, $^) of=$@ bs=512 count=200 seek=12 conv=notrunc
 
 create_img:
 ifeq ($(wildcard image),)
@@ -85,6 +89,9 @@ ifeq ($(wildcard $(IMG)),)
 	bximage -q -hd=16 -func=create -sectsize=512 -imgmode=flat $(IMG)
 endif
 # ------- img made
+
+debug: build 
+	qemu-system-i386 -m 32M -boot c -hda image/master.img -s -S
 
 .PHONY: clean
 clean:

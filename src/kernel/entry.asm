@@ -5,6 +5,5 @@ extern kernel_init
 
 global _start
 _start:
-    xchg bx, bx
     call kernel_init
     jmp $

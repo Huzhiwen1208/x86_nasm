@@ -1,9 +1,15 @@
-#include "inf.h"
+#include "include/inf.h"
+#include "include/type.h"
+#include "include/io.h"
+#include "include/console.h"
 
 void kernel_init() {
-    char os_init_message[] = "InfOS v0.0.1 Initializing";
-    char* gpu = (char*)0xb8000;
-    for (int i = 0; i < sizeof(os_init_message); i++) {
-        gpu[i*2] = os_init_message[i];
+    console_init();
+    char* message = "Hello, world!\n";
+    for (int i = 0; i < 100; i++) {
+        console_write(message, length(message));
+        if (i == 99) {
+            console_write("done\n", 5);
+        }
     }
 }

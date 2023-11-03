@@ -14,5 +14,3 @@ void assertion_failure(char *exp, char *file, char *base, int line);
         ;           \
     else            \
         assertion_failure(#exp, __FILE__, __BASE_FILE__, __LINE__)
-
-#define debug(fmt, ...) debug_info(__FILE__, __LINE__, fmt, ##__VA_ARGS__)

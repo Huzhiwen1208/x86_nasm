@@ -1,7 +1,9 @@
+#include "include/utils.h"
 #include "include/type.h"
 #include "include/io.h"
 #include "include/variable_args.h"
-#include "include/print.h"
+#include "include/stdio.h"
+#include "include/log.h"
 
 // string utils ------
 size_t length(const char* str) {
@@ -456,3 +458,11 @@ void debug_info(const char *file, int line, const char *fmt, ...)
     println_with_color(LIGHT_CYAN, "[DEBUG] %s:%d %s", file, line, buf);
 }
 // ------ debug utils end
+
+void memcpy(void* dst, const void* src, size_t n) {
+    u8* d = (u8*)dst;
+    const u8* s = (const u8*)src;
+    while (n--) {
+        *d++ = *s++;
+    }
+}

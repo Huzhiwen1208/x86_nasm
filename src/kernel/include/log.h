@@ -1,0 +1,1 @@
+#define debug(fmt, ...) debug_info(__FILE__, __LINE__, fmt, ##__VA_ARGS__)

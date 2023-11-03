@@ -1,6 +1,7 @@
 #include "include/type.h"
 #include "include/io.h"
 #include "include/variable_args.h"
+#include "include/print.h"
 
 // string utils ------
 size_t length(const char* str) {
@@ -370,10 +371,9 @@ int sprintf(char *buf, const char *fmt, ...)
     return i;
 }
     
-static char buf[1024];
-
 int printf(const char *fmt, ...)
 {
+    char buf[1024];
     va_list args;
     int i;
 
@@ -390,6 +390,7 @@ int printf(const char *fmt, ...)
 
 int println(const char *fmt, ...)
 {
+    char buf[1024];
     va_list args;
     int i;
 
@@ -400,6 +401,24 @@ int println(const char *fmt, ...)
     va_end(args);
 
     console_write(buf, i);
+    console_write("\n", 1);
+
+    return i;
+}
+
+int println_with_color(u8 color, const char *fmt, ...)
+{
+    char buf[1024];
+    va_list args;
+    int i;
+
+    va_start(args, fmt);
+
+    i = vsprintf(buf, fmt, args);
+
+    va_end(args);
+
+    console_write_with_color(buf, i, color);
     console_write("\n", 1);
 
     return i;
@@ -416,6 +435,7 @@ void assertion_failure(char *exp, char *file, char *base, int line)
 
 void panic(const char *fmt, ...)
 {
+    char buf[1024];
     va_list args;
     va_start(args, fmt);
     int i = vsprintf(buf, fmt, args);
@@ -424,3 +444,15 @@ void panic(const char *fmt, ...)
     printf("PANIC: %s \n", buf);
 }
 // ------ assert utils end
+
+// debug utils ------
+void debug_info(const char *file, int line, const char *fmt, ...)
+{
+    char buf[1024];
+    va_list args;
+    va_start(args, fmt);
+    vsprintf(buf, fmt, args);
+
+    println_with_color(LIGHT_CYAN, "[DEBUG] %s:%d %s", file, line, buf);
+}
+// ------ debug utils end

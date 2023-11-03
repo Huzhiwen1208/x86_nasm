@@ -116,6 +116,69 @@ void console_clear() {
     }
 }
 
+void console_write_with_color(const char* buffer, u32 len, u8 color) {
+    struct corsor* c = get_current_cursor();
+    u32 row = c->row;
+    u32 col = c->col;
+
+    u16* ptr = (u16*) (get_video_memory_base() + row * ROW_SIZE + col*2);
+    while (len--) {
+        char ch = *buffer++;
+        switch (ch) {
+            case NUL:
+                break;
+            case ENQ:
+                break;
+            case ESC:
+                break;
+            case BEL:
+                break;
+            case BS:
+                if (col > 0) {
+                    col--;
+                }
+                break;
+            case HT:
+                col = (col + 8) & ~(8 - 1);
+                break;
+            case LF:
+                row++;
+                col=0;
+                break;
+            case VT:
+                break;
+            case FF:
+                break;
+            case CR:
+                col = 0;
+                break;
+            case DEL:
+                break;
+            default:
+                *ptr++ = (u16) (ch | (u16)(color << 8));
+                col++;
+                break;
+        }
+
+        if (col == WIDTH) {
+            col = 0;
+            row++;
+        }
+
+        if (row == HEIGHT) {
+            row --;
+            u32 screen = get_video_memory_base() + ROW_SIZE;
+            set_video_memory_base(screen);
+        }
+
+        ptr = (u16*) (get_video_memory_base() + row * ROW_SIZE + col*2);
+    }
+
+    c->row = row;
+    c->col = col;
+    set_cursor(c);
+}
+
 void console_write(const char* buffer, u32 len) {
     struct corsor* c = get_current_cursor();
     u32 row = c->row;

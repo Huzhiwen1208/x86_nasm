@@ -6,7 +6,7 @@
 
 void kernel_main() {
     console_init();
-    debug("GDT initializing...");
+    info("GDT initializing...");
     gdt_init();
-    debug("Hello, os kernel!");
+    trace("Hello, os kernel!");
 }

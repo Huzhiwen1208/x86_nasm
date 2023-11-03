@@ -447,17 +447,52 @@ void panic(const char *fmt, ...)
 }
 // ------ assert utils end
 
-// debug utils ------
-void debug_info(const char *file, int line, const char *fmt, ...)
-{
+// log utils ------
+void debug_info(const char *file, int line, const char *fmt, ...) {
     char buf[1024];
     va_list args;
     va_start(args, fmt);
     vsprintf(buf, fmt, args);
 
-    println_with_color(LIGHT_CYAN, "[DEBUG] %s:%d %s", file, line, buf);
+    println_with_color(CYAN, "[DEBUG] %s:%d %s", file, line, buf);
 }
-// ------ debug utils end
+
+void trace_info(const char *file, int line, const char *fmt, ...) {
+    char buf[1024];
+    va_list args;
+    va_start(args, fmt);
+    vsprintf(buf, fmt, args);
+
+    println_with_color(GRAY, "[TRACE] %s:%d %s", file, line, buf);
+}
+
+void info_info(const char *file, int line, const char *fmt, ...) {
+    char buf[1024];
+    va_list args;
+    va_start(args, fmt);
+    vsprintf(buf, fmt, args);
+
+    println_with_color(GREEN, "[INFO] %s:%d %s", file, line, buf);
+}
+
+void warn_info(const char *file, int line, const char *fmt, ...) {
+    char buf[1024];
+    va_list args;
+    va_start(args, fmt);
+    vsprintf(buf, fmt, args);
+
+    println_with_color(YELLOW, "[WARN] %s:%d %s", file, line, buf);
+}
+
+void error_info(const char *file, int line, const char *fmt, ...) {
+    char buf[1024];
+    va_list args;
+    va_start(args, fmt);
+    vsprintf(buf, fmt, args);
+
+    println_with_color(RED, "[DEBUG] %s:%d %s", file, line, buf);
+}
+// ------ log utils end
 
 void memcpy(void* dst, const void* src, size_t n) {
     u8* d = (u8*)dst;

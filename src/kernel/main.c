@@ -2,14 +2,16 @@
 #include "include/type.h"
 #include "include/io.h"
 #include "include/console.h"
+#include "include/print.h"
 
 void kernel_init() {
     console_init();
-    char* message = "Hello, world!\n";
+    char* message = "Hello, world!";
     for (int i = 0; i < 100; i++) {
-        console_write(message, length(message));
+       println("%s, %d", message, i);
         if (i == 99) {
-            console_write("done\n", 5);
+            printf("Kernel init done.\n");
         }
     }
+    assert(2 == 2);
 }

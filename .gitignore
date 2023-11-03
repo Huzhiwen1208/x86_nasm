@@ -6,5 +6,6 @@ test_*
 *.o
 *.elf
 target
-image/
+image
 .vscode
+*.img

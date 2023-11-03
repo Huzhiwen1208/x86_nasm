@@ -4,8 +4,8 @@ GCC=x86_64-elf-gcc
 TARGET=src/target
 
 # -mno-sse is nessary in macos, not using high level instruction or register
-KernelLdFlags=-m elf_i386 -static
-KernelGccFlags=-m32 -fno-builtin -fno-stack-protector -mno-sse
+KernelLdFlags=-m elf_i386 -static -w
+KernelGccFlags=-m32 -fno-builtin -fno-stack-protector -mno-sse -w
 KernelGccFlags+=-nostdinc -nostdlib -fno-pic -fno-pie -g
 
 BootLoader=src/bootloader

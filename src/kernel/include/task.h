@@ -24,8 +24,8 @@ typedef struct pcb_manager {
 void pcb_manager_init();
 void enqueue(PCB* pcb);
 PCB* dequeue();
-int is_empty();
-int is_full();
+i32 is_empty();
+i32 is_full();
 
 void create_task(void (*entry)(), PCB* pcb);
 PCB *get_current_task();

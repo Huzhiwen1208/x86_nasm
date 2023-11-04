@@ -35,3 +35,36 @@ brew install x86_64-elf x86_64-elf-gcc llvm nasm bochs sdl
 | ...            | ...      | ...         | ...               |
 | 0x0004         | other    | -           | pcb--->           |
 | 0x0000         | esp      | -           | pcb->             |
+
+## Interrupt
+### Internal Interrupt
+- Software Interrupt
+  - System call
+- Exception:
+  - Div zero
+  - Page Fault
+  - Instruction Fault
+
+### External Interrupt
+- Clock interrupt
+- Keyboard interrupt
+- Disk interrupt
+  - Sync IO
+  - Async IO
+  - DMA(Direct Memory access)
+  
+### Interrupt Vector Table In Kernel(IDT)
+> IDT: Interrupt descriptor table
+```cpp
+// ID: interrupt descriptor
+typedef struct interrupt_descriptor {
+  u16 offset_low;    // 0 - 15 low bit, offset in segment
+  u16 selector;   // code selector
+  u8 reserved;    // unused
+  u8 type : 4;    // task gate/interrupt gate/trap gate -> 0x0110/0x1110/...
+  u8 segment : 1; // 0: system segment, 1: code segment
+  u8 DPL : 2;     // DPL
+  u8 present : 1; // present in memory?
+  u16 offset1;    // 16-31 high bit offset in segment
+} _no_align interrupt_descriptor;
+```

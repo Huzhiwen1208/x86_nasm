@@ -24,7 +24,7 @@ void concat(char* s1, char* s2) {
     }
 }
 
-int is_digit(char c) {
+i32 is_digit(char c) {
     return c >= '0' && c <= '9';
 }
 // ------ string utils end
@@ -40,20 +40,20 @@ int is_digit(char c) {
 #define DOUBLE 0x80  // 浮点数
 
 // 将字符数字串转换成整数，并将指针前移
-static int skip_atoi(const char **s)
+static i32 skip_atoi(const char **s)
 {
-    int i = 0;
+    i32 i = 0;
     while (is_digit(**s))
         i = i * 10 + *((*s)++) - '0';
     return i;
 }
 
-static char *number(char *str, u32 *num, int base, int size, int precision, int flags)
+static char *number(char *str, u32 *num, i32 base, i32 size, i32 precision, i32 flags)
 {
     char pad, sign, tmp[36];
     const char *digits = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    int i;
-    int index;
+    i32 i;
+    i32 index;
     char *ptr = str;
 
     if (flags & SMALL)
@@ -72,10 +72,10 @@ static char *number(char *str, u32 *num, int base, int size, int precision, int 
         sign = '-';
         *(double *)(num) = -(*(double *)(num));
     }
-    else if (flags & SIGN && !(flags & DOUBLE) && ((int)(*num)) < 0)
+    else if (flags & SIGN && !(flags & DOUBLE) && ((i32)(*num)) < 0)
     {
         sign = '-';
-        (*num) = -(int)(*num);
+        (*num) = -(i32)(*num);
     }
     else
         sign = (flags & PLUS) ? '+' : ((flags & SPACE) ? ' ' : 0);
@@ -163,20 +163,20 @@ static char *number(char *str, u32 *num, int base, int size, int precision, int 
     return str;
 }
 
-int vsprintf(char *buf, const char *fmt, va_list args)
+i32 vsprintf(char *buf, const char *fmt, va_list args)
 {
-    int len;
-    int i;
+    i32 len;
+    i32 i;
 
     char *str;
     char *s;
-    int *ip;
+    i32 *ip;
 
-    int flags;
+    i32 flags;
 
-    int field_width;
-    int precision;
-    int qualifier;
+    i32 field_width;
+    i32 precision;
+    i32 qualifier;
     u32 num;
     u8 *ptr;
 
@@ -218,7 +218,7 @@ int vsprintf(char *buf, const char *fmt, va_list args)
         else if (*fmt == '*')
         {
             ++fmt;
-            field_width = va_arg(args, int);
+            field_width = va_arg(args, i32);
 
             if (field_width < 0)
             {
@@ -237,7 +237,7 @@ int vsprintf(char *buf, const char *fmt, va_list args)
 
             else if (*fmt == '*')
             {
-                precision = va_arg(args, int);
+                precision = va_arg(args, i32);
             }
             if (precision < 0)
                 precision = 0;
@@ -258,7 +258,7 @@ int vsprintf(char *buf, const char *fmt, va_list args)
             if (!(flags & LEFT))
                 while (--field_width > 0)
                     *str++ = ' ';
-            *str++ = (unsigned char)va_arg(args, int);
+            *str++ = (unsigned char)va_arg(args, i32);
             while (--field_width > 0)
                 *str++ = ' ';
             break;
@@ -311,7 +311,7 @@ int vsprintf(char *buf, const char *fmt, va_list args)
             break;
 
         case 'n':
-            ip = va_arg(args, int *);
+            ip = va_arg(args, i32 *);
             *ip = (str - buf);
             break;
         case 'f':
@@ -329,7 +329,7 @@ int vsprintf(char *buf, const char *fmt, va_list args)
             ptr = va_arg(args, char *);
             for (size_t t = 0; t < 6; t++, ptr++)
             {
-                int num = *ptr;
+                i32 num = *ptr;
                 str = number(str, &num, 16, 2, precision, flags);
                 *str = ':';
                 str++;
@@ -341,7 +341,7 @@ int vsprintf(char *buf, const char *fmt, va_list args)
             ptr = va_arg(args, u8 *);
             for (size_t t = 0; t < 4; t++, ptr++)
             {
-                int num = *ptr;
+                i32 num = *ptr;
                 str = number(str, &num, 10, field_width, precision, flags);
                 *str = '.';
                 str++;
@@ -365,20 +365,20 @@ int vsprintf(char *buf, const char *fmt, va_list args)
     return i;
 }
 
-int sprintf(char *buf, const char *fmt, ...)
+i32 sprintf(char *buf, const char *fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
-    int i = vsprintf(buf, fmt, args);
+    i32 i = vsprintf(buf, fmt, args);
     va_end(args);
     return i;
 }
     
-int printf(const char *fmt, ...)
+i32 printf(const char *fmt, ...)
 {
     char buf[1024];
     va_list args;
-    int i;
+    i32 i;
 
     va_start(args, fmt);
 
@@ -391,11 +391,11 @@ int printf(const char *fmt, ...)
     return i;
 }
 
-int println(const char *fmt, ...)
+i32 println(const char *fmt, ...)
 {
     char buf[1024];
     va_list args;
-    int i;
+    i32 i;
 
     va_start(args, fmt);
 
@@ -409,11 +409,11 @@ int println(const char *fmt, ...)
     return i;
 }
 
-int println_with_color(u8 color, const char *fmt, ...)
+i32 println_with_color(u8 color, const char *fmt, ...)
 {
     char buf[1024];
     va_list args;
-    int i;
+    i32 i;
 
     va_start(args, fmt);
 
@@ -427,11 +427,11 @@ int println_with_color(u8 color, const char *fmt, ...)
     return i;
 }
 
-int print_with_color(u8 color, const char *fmt, ...)
+i32 print_with_color(u8 color, const char *fmt, ...)
 {
     char buf[1024];
     va_list args;
-    int i;
+    i32 i;
 
     va_start(args, fmt);
 
@@ -446,7 +446,7 @@ int print_with_color(u8 color, const char *fmt, ...)
 // ------ print utils end
 
 // assert utils ------
-void assertion_failure(char *exp, char *file, char *base, int line)
+void assertion_failure(char *exp, char *file, char *base, i32 line)
 {
     printf("Assertion: %s failed!, %s:%d\n", exp, file, line);
 
@@ -458,7 +458,7 @@ void panic(const char *fmt, ...)
     char buf[1024];
     va_list args;
     va_start(args, fmt);
-    int i = vsprintf(buf, fmt, args);
+    i32 i = vsprintf(buf, fmt, args);
     va_end(args);
 
     printf("PANIC: %s \n", buf);
@@ -466,7 +466,7 @@ void panic(const char *fmt, ...)
 // ------ assert utils end
 
 // log utils ------
-void debug_info(const char *file, int line, const char *fmt, ...) {
+void debug_info(const char *file, i32 line, const char *fmt, ...) {
     char buf[1024];
     va_list args;
     va_start(args, fmt);
@@ -475,7 +475,7 @@ void debug_info(const char *file, int line, const char *fmt, ...) {
     println_with_color(CYAN, "[DEBUG] %s:%d %s", file, line, buf);
 }
 
-void trace_info(const char *file, int line, const char *fmt, ...) {
+void trace_info(const char *file, i32 line, const char *fmt, ...) {
     char buf[1024];
     va_list args;
     va_start(args, fmt);
@@ -484,7 +484,7 @@ void trace_info(const char *file, int line, const char *fmt, ...) {
     println_with_color(GRAY, "[TRACE] %s:%d %s", file, line, buf);
 }
 
-void info_info(const char *file, int line, const char *fmt, ...) {
+void info_info(const char *file, i32 line, const char *fmt, ...) {
     char buf[1024];
     va_list args;
     va_start(args, fmt);
@@ -493,7 +493,7 @@ void info_info(const char *file, int line, const char *fmt, ...) {
     println_with_color(GREEN, "[INFO] %s:%d %s", file, line, buf);
 }
 
-void warn_info(const char *file, int line, const char *fmt, ...) {
+void warn_info(const char *file, i32 line, const char *fmt, ...) {
     char buf[1024];
     va_list args;
     va_start(args, fmt);
@@ -502,7 +502,7 @@ void warn_info(const char *file, int line, const char *fmt, ...) {
     println_with_color(YELLOW, "[WARN] %s:%d %s", file, line, buf);
 }
 
-void error_info(const char *file, int line, const char *fmt, ...) {
+void error_info(const char *file, i32 line, const char *fmt, ...) {
     char buf[1024];
     va_list args;
     va_start(args, fmt);

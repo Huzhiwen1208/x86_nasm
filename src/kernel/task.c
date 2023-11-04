@@ -29,11 +29,11 @@ PCB* dequeue() {
     return result;
 }
 
-int is_empty() {
+i32 is_empty() {
     return PCB_MANAGER.front == PCB_MANAGER.rear;
 }
 
-int is_full() {
+i32 is_full() {
     return (PCB_MANAGER.rear + 1) % TASK_SIZE == PCB_MANAGER.front;
 }
 

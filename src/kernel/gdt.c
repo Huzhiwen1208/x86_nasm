@@ -1,8 +1,8 @@
-#include "include/gdt.h"
+#include "include/descriptor.h"
 #include "include/utils.h"
 
 struct global_descriptor gdt[GDT_SIZE];
-struct global_descriptor_pointer gdt_ptr;
+struct descriptor_pointer gdt_ptr;
 
 void gdt_init() {
     

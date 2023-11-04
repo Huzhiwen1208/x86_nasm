@@ -6,6 +6,8 @@ void panic(const char *fmt, ...);
 
 int sprintf(char *buf, const char *fmt, ...);
 
+int print_with_color(u8 color, const char *fmt, ...);
+
 // assert
 void assertion_failure(char *exp, char *file, char *base, int line);
 

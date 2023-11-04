@@ -7,7 +7,8 @@ readb:
     mov ebp, esp
 
     xor eax, eax;  eax = 0
-    mov edx, [ebp + 8]; entry argument(u16 port) -> edx, [ebp+4] is function return address
+    ; entry argument(u16 port) -> edx, [ebp+4] is function return address, [ebp] is ebp
+    mov edx, [ebp + 8]
     in al, dx
 
     nop

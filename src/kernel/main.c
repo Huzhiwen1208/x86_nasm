@@ -3,10 +3,40 @@
 #include "include/stdio.h"
 #include "include/log.h"
 #include "include/gdt.h"
+#include "include/task.h"
+
+void thread_a() {
+    for (int i = 0; i < 2000; i++) {
+        printf("A");
+        schedule();
+    }
+}
+
+void thread_b() {
+    for (int i = 0; i < 2000; i++) {
+        printf("B");
+        schedule();
+    }
+}
+
+void thread_c() {
+    for (int i = 0; i < 2000; i++) {
+        printf("C");
+        schedule();
+    }
+}
 
 void kernel_main() {
     console_init();
+    println_with_color(LIGHT_BLUE, "XiaoYan! XiaoYan! XiaoYan! XiaoYan!");
     info("GDT initializing...");
     gdt_init();
     trace("Hello, os kernel!");
+
+    pcb_manager_init();
+
+    create_task(thread_a, 0x100000);
+    create_task(thread_b, 0x200000);
+    create_task(thread_c, 0x300000);
+    schedule();
 }

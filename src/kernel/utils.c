@@ -4,6 +4,7 @@
 #include "include/variable_args.h"
 #include "include/stdio.h"
 #include "include/log.h"
+#include "include/console.h"
 
 // string utils ------
 size_t length(const char* str) {
@@ -422,6 +423,23 @@ int println_with_color(u8 color, const char *fmt, ...)
 
     console_write_with_color(buf, i, color);
     console_write("\n", 1);
+
+    return i;
+}
+
+int print_with_color(u8 color, const char *fmt, ...)
+{
+    char buf[1024];
+    va_list args;
+    int i;
+
+    va_start(args, fmt);
+
+    i = vsprintf(buf, fmt, args);
+
+    va_end(args);
+
+    console_write_with_color(buf, i, color);
 
     return i;
 }

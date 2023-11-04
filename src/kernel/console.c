@@ -86,8 +86,9 @@ static struct corsor* get_current_cursor() {
     u32 cursor_address = GPU_MEM_BASE + position;
     u32 offset = cursor_address - get_video_memory_base();
 
-    c.row = offset / ROW_SIZE;
-    c.col = offset % ROW_SIZE;
+    offset >>= 1;
+    c.row = offset / WIDTH;
+    c.col = offset % WIDTH;
     return &c;
 }
 

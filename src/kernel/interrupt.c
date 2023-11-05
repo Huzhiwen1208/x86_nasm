@@ -60,7 +60,7 @@ extern void* handler_entry_table[IDT_SIZE];
 void* handler_list[IDT_SIZE];
 
 void idt_init() {
-    for (i32 i = 0; i < IDT_SIZE; i++) {
+    for (i32 i = 0; i < EXCEPTION_SIZE; i++) {
         void* trap_handler = handler_entry_table[i];
         idt[i].offset_low = (u32)trap_handler & 0xffff;
         idt[i].selector = 1 << 3;

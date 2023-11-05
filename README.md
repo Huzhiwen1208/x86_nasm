@@ -68,3 +68,6 @@ typedef struct interrupt_descriptor {
   u16 offset1;    // 16-31 high bit offset in segment
 } _no_align interrupt_descriptor;
 ```
+
+> Exception: 0x0 ~ 0x1f = 32
+> OuteralInt: 0x20 ~ 0x2f = 16

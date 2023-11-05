@@ -4,6 +4,7 @@
 #include "include/log.h"
 #include "include/descriptor.h"
 #include "include/task.h"
+#include "include/interrupt.h"
 
 void thread_a() {
     for (i32 i = 0; i < 2000; i++) {
@@ -40,5 +41,5 @@ void kernel_main() {
     // create_task(thread_c, 0x300000);
     // schedule();
 
-    idt_init();
+    interrupt_init();
 }

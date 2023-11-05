@@ -3,11 +3,54 @@
 #include "include/descriptor.h"
 #include "include/interrupt.h"
 
-// method
+#define PIC_M_CTRL 0x20 // Main PIC control port
+#define PIC_M_DATA 0x21 // Main PIC data port
+#define PIC_S_CTRL 0xa0 // Slave PIC control port
+#define PIC_S_DATA 0xa1 // Slave PIC data port
+#define PIC_EOI 0x20    // End-of-interrupt command code
+
+// methods
+// exception handler
 void exception_handler(i32 vector) {
     trace("Exception: %d has been invoked", vector);
     while (1);
 }
+
+// outer interrupt handler
+void outer_handler(int vector)
+{
+    debug("Outer interrupt: %d has been invoked", vector);
+    send_eoi(vector);
+}
+
+// Initialize Programmable Interrupt Controller
+void pic_init() {
+    outb(PIC_M_CTRL, 0b00010001);
+    outb(PIC_M_DATA, 0x20);
+    outb(PIC_M_DATA, 0b00000100);
+    outb(PIC_M_DATA, 0b00000001);
+
+    outb(PIC_S_CTRL, 0b00010001);
+    outb(PIC_S_DATA, 0x28);
+    outb(PIC_S_DATA, 2);
+    outb(PIC_S_DATA, 0b00000001);
+
+    outb(PIC_M_DATA, 0b11111111);
+    outb(PIC_S_DATA, 0b11111111);
+}
+
+// PIC: notify CPU that interrupt has been handled
+void send_eoi(int vector) {
+    if (vector >= 0x20 && vector < 0x28) {
+        outb(PIC_M_CTRL, PIC_EOI);
+    }
+
+    if (vector >= 0x28 && vector < 0x30) {
+        outb(PIC_M_CTRL, PIC_EOI);
+        outb(PIC_S_CTRL, PIC_EOI);
+    }
+}
+
 
 // IDT
 struct interrupt_descriptor idt[IDT_SIZE];
@@ -35,5 +78,14 @@ void idt_init() {
         handler_list[i] = exception_handler;
     }
 
+    for (i32 i = 0; i < OUTER_INTERRUPT_SIZE; i++) {
+        handler_list[i + 0x20] = outer_handler;
+    }
+
     asm volatile ("lidt %0" : : "m"(idt_pointer));
+}
+
+void interrupt_init() {
+    pic_init();
+    idt_init();
 }

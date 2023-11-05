@@ -2,7 +2,7 @@
 section .text
 
 extern handler_list
-%%macro INTERRUPT_HANDLER 2
+%macro INTERRUPT_HANDLER 2
 interrupt_handler_%1:
 %ifn %2
     push 0x88888888
@@ -23,12 +23,12 @@ INTERRUPT_HANDLER 0x06, 0; 0x06 #UD Invalid Opcode (Undefined Opcode)
 INTERRUPT_HANDLER 0x07, 0; 0x07 #NM Device Not Available (No Math Coprocessor)
 INTERRUPT_HANDLER 0x08, 1; 0x08 #DF Double Fault
 INTERRUPT_HANDLER 0x09, 0; 0x09 Coprocessor Segment Overrun (reserved)
-INTERRUPT_HANDLER 0x0A, 1; 0x0A #TS Invalid TSS
-INTERRUPT_HANDLER 0x0B, 1; 0x0B #NP Segment Not Present
-INTERRUPT_HANDLER 0x0C, 1; 0x0C #SS Stack-Segment Fault
-INTERRUPT_HANDLER 0x0D, 1; 0x0D #GP General Protection
-INTERRUPT_HANDLER 0x0E, 1; 0x0E #PF Page Fault
-INTERRUPT_HANDLER 0x0F, 0; 0x0F reserved
+INTERRUPT_HANDLER 0x0a, 1; 0x0A #TS Invalid TSS
+INTERRUPT_HANDLER 0x0b, 1; 0x0B #NP Segment Not Present
+INTERRUPT_HANDLER 0x0c, 1; 0x0C #SS Stack-Segment Fault
+INTERRUPT_HANDLER 0x0d, 1; 0x0D #GP General Protection
+INTERRUPT_HANDLER 0x0e, 1; 0x0E #PF Page Fault
+INTERRUPT_HANDLER 0x0f, 0; 0x0F reserved
 INTERRUPT_HANDLER 0x10, 0; 0x10 #MF x87 FPU Floating-Point Error (Math Fault)
 INTERRUPT_HANDLER 0x11, 1; 0x11 #AC Alignment Check
 INTERRUPT_HANDLER 0x12, 0; 0x12 #MC Machine Check

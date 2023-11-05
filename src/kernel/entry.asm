@@ -6,5 +6,4 @@ extern kernel_main
 global _start
 _start:
     call kernel_main
-    int 0x80
     jmp $

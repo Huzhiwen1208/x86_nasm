@@ -42,4 +42,11 @@ void kernel_main() {
     // schedule();
 
     interrupt_init();
+    asm volatile("sti\n");
+
+    for (i32 i = 0; i < 10000; i++) {
+        println("Love you!!!!!!!!!!!!!");
+        u32 cnt = 100000000;
+        while(cnt--);
+    }
 }

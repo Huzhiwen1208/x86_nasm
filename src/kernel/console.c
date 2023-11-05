@@ -1,6 +1,7 @@
 #include "include/console.h"
 #include "include/type.h"
 #include "include/io.h"
+#include "include/utils.h"
 
 #define CRT_ADDR_REG 0x3D4 // CRT(6845) address register
 #define CRT_DATA_REG 0x3D5 // CRT(6845) data register
@@ -168,7 +169,14 @@ void console_write_with_color(const char* buffer, u32 len, u8 color) {
 
         if (row == HEIGHT) {
             row --;
-            u32 screen = get_video_memory_base() + ROW_SIZE;
+            u32 screen = get_video_memory_base() + ROW_SIZE; // scroll screen up
+            if (screen + SCR_SIZE == GPU_MEM_SIZE) {
+                memcpy((void*) GPU_MEM_BASE, (void*) screen, SCR_SIZE);
+                screen = GPU_MEM_BASE;
+                c->row = row;
+                c->col = col;
+                set_cursor(c);
+            }
             set_video_memory_base(screen);
         }
 
@@ -232,7 +240,16 @@ void console_write(const char* buffer, u32 len) {
         if (row == HEIGHT) {
             row --;
             u32 screen = get_video_memory_base() + ROW_SIZE;
-            set_video_memory_base(screen);
+            if (screen + SCR_SIZE >= GPU_MEM_BASE + GPU_MEM_SIZE) {
+                memcpy((void*) GPU_MEM_BASE, (void*) screen, SCR_SIZE);
+                screen = GPU_MEM_BASE;
+                set_video_memory_base(screen);
+                c->row = row;
+                c->col = col;
+                set_cursor(c);
+            } else {
+                set_video_memory_base(screen);
+            }
         }
 
         ptr = (u16*) (get_video_memory_base() + row * ROW_SIZE + col*2);

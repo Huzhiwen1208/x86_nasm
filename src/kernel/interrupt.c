@@ -4,6 +4,7 @@
 #include "include/interrupt.h"
 #include "include/io.h"
 #include "include/stdio.h"
+#include "include/task.h"
 
 #define PIC_M_CTRL 0x20 // Main PIC control port
 #define PIC_M_DATA 0x21 // Main PIC data port
@@ -21,9 +22,9 @@ void exception_handler(i32 vector) {
 // outer interrupt handler
 void outer_handler(int vector)
 {
-    print_with_color(YELLOW, "XiaoYan! XiaoYan! XiaoYan! XiaoYan!\n");
-
+    trace("Outer interrupt: %d has been invoked", vector);
     send_eoi(vector);
+    schedule();
 }
 
 // Initialize Programmable Interrupt Controller

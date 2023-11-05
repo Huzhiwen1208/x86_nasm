@@ -17,6 +17,7 @@ typedef long long i64;
 typedef unsigned int size_t;
 
 #define _no_align __attribute__((packed));
+#define _ofp __attribute__((optimize("omit-frame-pointer")))
 
 #define BLACK 0
 #define BLUE 1

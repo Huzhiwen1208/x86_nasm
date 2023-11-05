@@ -7,9 +7,25 @@ interrupt_handler_%1:
 %ifn %2
     push 0x88888888
 %endif
+    ; save context 
+    pushad
+    push ds
+    push es
+    push fs
+    push gs
+
     push %1
     call [handler_list + %1 * 4]
-    add esp, 8
+    add esp, 4; pop %1
+
+    ; restore context
+    pop gs
+    pop fs
+    pop es
+    pop ds
+    popad
+    add esp, 4; pop 0x88888888/error code
+
     iret
 %endmacro
 

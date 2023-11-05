@@ -1,7 +1,7 @@
-#include "include/console.h"
-#include "include/type.h"
-#include "include/io.h"
-#include "include/utils.h"
+#include "../include/console.h"
+#include "../include/type.h"
+#include "../include/io.h"
+#include "../include/utils.h"
 
 #define CRT_ADDR_REG 0x3D4 // CRT(6845) address register
 #define CRT_DATA_REG 0x3D5 // CRT(6845) data register

@@ -1,10 +1,10 @@
-#include "include/type.h"
-#include "include/log.h"
-#include "include/descriptor.h"
-#include "include/interrupt.h"
-#include "include/io.h"
-#include "include/stdio.h"
-#include "include/task.h"
+#include "../include/type.h"
+#include "../include/log.h"
+#include "../include/descriptor.h"
+#include "../include/interrupt.h"
+#include "../include/io.h"
+#include "../include/stdio.h"
+#include "../include/task.h"
 
 #define PIC_M_CTRL 0x20 // Main PIC control port
 #define PIC_M_DATA 0x21 // Main PIC data port

@@ -1,10 +1,10 @@
-#include "include/utils.h"
-#include "include/type.h"
-#include "include/io.h"
-#include "include/variable_args.h"
-#include "include/stdio.h"
-#include "include/log.h"
-#include "include/console.h"
+#include "../include/utils.h"
+#include "../include/type.h"
+#include "../include/io.h"
+#include "../include/variable_args.h"
+#include "../include/stdio.h"
+#include "../include/log.h"
+#include "../include/console.h"
 
 // string utils ------
 size_t length(const char* str) {

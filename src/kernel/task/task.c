@@ -1,5 +1,5 @@
-#include "include/task.h"
-#include "include/constant.h"
+#include "../include/task.h"
+#include "../include/constant.h"
 
 pcb_manager PCB_MANAGER;
 

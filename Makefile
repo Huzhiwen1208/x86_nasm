@@ -13,6 +13,7 @@ KernelPath=src/kernel
 ELFKernel=$(TARGET)/kernel/os.elf
 NakedKernel=$(TARGET)/kernel/os.bin
 KernelSourceFile=$(wildcard $(KernelPath)/*.c) $(wildcard $(KernelPath)/*.asm)
+KernelSourceFile+=$(wildcard $(KernelPath)/*/*.c) $(wildcard $(KernelPath)/*/*.asm)
 KernelOBJ=$(patsubst $(KernelPath)/%.asm, $(TARGET)/kernel/%.o, $(filter %.asm, $(KernelSourceFile)))
 KernelOBJ+=$(patsubst $(KernelPath)/%.c, $(TARGET)/kernel/%.o, $(filter %.c, $(KernelSourceFile)))
 ENTRYPOINT=0x7e00
@@ -34,6 +35,10 @@ $(TARGET):
 ifeq ($(wildcard $(TARGET)),)
 	@mkdir -p $(TARGET)/bootloader
 	@mkdir -p $(TARGET)/kernel
+	@mkdir -p $(TARGET)/kernel/utils
+	@mkdir -p $(TARGET)/kernel/console
+	@mkdir -p $(TARGET)/kernel/interrupt
+	@mkdir -p $(TARGET)/kernel/task
 endif
 
 # test -----
@@ -99,3 +104,6 @@ clean:
 	rm -rf image
 	rm -rf test/*
 	rm -rf src/target
+
+test_file:
+	@echo $(KernelOBJ)

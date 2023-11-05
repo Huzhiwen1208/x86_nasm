@@ -35,7 +35,8 @@ void kernel_main() {
     info("IDT & PIC initializing...");
     interrupt_init();
     info("IDT & PIC initialized successfully!");
-
+    clock_init();
+    
     pcb_manager_init();
     create_task(thread_a, 0x100000);
     create_task(thread_b, 0x200000);

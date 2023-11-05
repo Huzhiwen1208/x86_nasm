@@ -5,12 +5,17 @@
 #include "../include/io.h"
 #include "../include/stdio.h"
 #include "../include/task.h"
+#include "../include/stdio.h"
 
 #define PIC_M_CTRL 0x20 // Main PIC control port
 #define PIC_M_DATA 0x21 // Main PIC data port
 #define PIC_S_CTRL 0xa0 // Slave PIC control port
 #define PIC_S_DATA 0xa1 // Slave PIC data port
 #define PIC_EOI 0x20    // End-of-interrupt command code
+
+// handler entry table in asm & handler list in c
+extern void* handler_entry_table[IDT_SIZE];
+void* handler_list[IDT_SIZE];
 
 // methods
 // exception handler
@@ -19,12 +24,46 @@ void exception_handler(i32 vector) {
     while (1);
 }
 
-// outer interrupt handler
-void outer_handler(int vector)
+// default outer interrupt handler
+void outer_handler_default(int vector)
 {
     trace("Outer interrupt: %d has been invoked", vector);
     send_eoi(vector);
-    schedule();
+}
+
+// set interrupt mask
+void set_interrupt_mask(i32 vector) {
+    assert(vector >= 0x20 && vector < 0x30);
+    vector -= 0x20;
+
+    if (vector < 8) {
+        u8 mask = readb(PIC_M_DATA);
+        mask &= ~(1 << vector);
+        writeb(PIC_M_DATA, mask);
+    } else {
+        u8 mask = readb(PIC_S_DATA);
+        mask &= ~(1 << (vector - 8));
+        writeb(PIC_S_DATA, mask);
+    }
+}
+
+void clear_interrupt_mask(i32 vector) {
+    assert(vector >= 0x20 && vector < 0x30);
+    vector -= 0x20;
+
+    if (vector < 8) {
+        u8 mask = readb(PIC_M_DATA);
+        mask |= (1 << vector);
+        writeb(PIC_M_DATA, mask);
+    } else {
+        u8 mask = readb(PIC_S_DATA);
+        mask |= (1 << (vector - 8));
+        writeb(PIC_S_DATA, mask);
+    }
+}
+
+void set_interrupt_handler(i32 vector, void* handler) {
+    handler_list[vector] = handler;
 }
 
 // Initialize Programmable Interrupt Controller
@@ -60,9 +99,6 @@ void send_eoi(int vector) {
 struct interrupt_descriptor idt[IDT_SIZE];
 struct descriptor_pointer idt_pointer;
 
-extern void* handler_entry_table[IDT_SIZE];
-void* handler_list[IDT_SIZE];
-
 void idt_init() {
     for (i32 i = 0; i < EXCEPTION_SIZE + OUTER_INTERRUPT_SIZE; i++) {
         void* trap_handler = handler_entry_table[i];
@@ -83,7 +119,7 @@ void idt_init() {
     }
 
     for (i32 i = 0; i < OUTER_INTERRUPT_SIZE; i++) {
-        handler_list[i + EXCEPTION_SIZE] = outer_handler;
+        handler_list[i + EXCEPTION_SIZE] = outer_handler_default;
     }
 
     asm volatile ("lidt %0" : : "m"(idt_pointer));

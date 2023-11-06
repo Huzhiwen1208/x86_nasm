@@ -29,7 +29,7 @@ void _ofp thread_c() {
 }
 
 void kernel_main() {
-    console_init();
+    // console_init();
     info("GDT initializing...");
     gdt_init();
     info("GDT initialized successfully!");
@@ -40,6 +40,10 @@ void kernel_main() {
     clock_init();
     info("Clock initialized successfully!");
     asm volatile("cli");
+
+    info("Memory map initializing...");
+    mapping_init();
+    info("Memory map initialized successfully!");
 
     // pcb_manager_init();
     // create_task(thread_a, 0x100000);

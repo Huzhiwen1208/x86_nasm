@@ -520,6 +520,7 @@ void memcpy(void* dst, const void* src, size_t n) {
     }
 }
 
+// clear memory from start to start+n, byte by byte
 void memfree(void* start, size_t n) {
     u8* s = (u8*)start;
     while (n--) {

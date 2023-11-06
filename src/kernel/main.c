@@ -29,7 +29,7 @@ void _ofp thread_c() {
 }
 
 void kernel_main() {
-    // console_init();
+    console_init();
     info("GDT initializing...");
     gdt_init();
     info("GDT initialized successfully!");
@@ -49,4 +49,5 @@ void kernel_main() {
     // create_task(thread_a, 0x100000);
     // create_task(thread_b, 0x200000);
     // create_task(thread_c, 0x300000);
+    u32 paddr = get_physical_address(0x3ffff0);
 }

@@ -4,6 +4,47 @@
 #include "../include/utils.h"
 
 frame_allocator FRAME_ALLOCATOR;
+u32 KERNEL_ROOT_PPN;
+
+// vaddr 
+u32 get_first_page_index(u32 vaddr) {
+    return vaddr >> 22 & 0x3ff;
+}
+
+u32 get_second_page_index(u32 vaddr) {
+    return vaddr >> 12 & 0x3ff;
+}
+
+u32 get_physical_page_offset(u32 vaddr) {
+    return vaddr & 0xfff;
+}
+
+page_table_entry* get_root_page_table() {
+    return (page_table_entry*)(get_root_ppn() << 12);
+}
+
+page_table_entry* get_second_page_table(u32 vaddr) {
+    page_table_entry* root_page_table = get_root_page_table();
+    u32 first_page_index = get_first_page_index(vaddr);
+    page_table_entry* pte = root_page_table + first_page_index;
+
+    return (page_table_entry*)(pte->index << 12);
+}
+
+u32 get_physical_page_number(u32 vaddr) {
+    page_table_entry* second_page_table = get_second_page_table(vaddr);
+    u32 second_page_index = get_second_page_index(vaddr);
+    page_table_entry* pte = second_page_table + second_page_index;
+
+    return pte->index;
+}
+
+u32 get_physical_address(u32 vaddr) {
+    u32 ppn = get_physical_page_number(vaddr);
+    u32 offset = get_physical_page_offset(vaddr);
+
+    return (ppn << 12) + offset;
+}
 
 static void frame_allocator_empty_init() {
     FRAME_ALLOCATOR.total_pages = 0;
@@ -51,6 +92,7 @@ void free_physical_page(u32 ppn) {
     FRAME_ALLOCATOR.free_pages++;
 }
 
+// return free ppn
 u32 allocate_physical_page() {
     if (FRAME_ALLOCATOR.free_pages == 0) {
         panic("No free physical page!");
@@ -65,7 +107,7 @@ u32 allocate_physical_page() {
     }
 }
 
-void show_physical_pages() {
+static void show_physical_pages() {
     printf("---------------show physical pages---------------\n");
     printf("Total pages: %d, Free pages: %d\n", FRAME_ALLOCATOR.total_pages, FRAME_ALLOCATOR.free_pages);
     for (i32 i = 0; i < MAX_PAGES; i++) {
@@ -76,8 +118,8 @@ void show_physical_pages() {
     printf("---------------show physical page end---------------\n");
 }
 
-u32 get_cr3() {
-    asm volatile ("movl %cr3, %eax");
+u32 get_root_ppn() {
+    return KERNEL_ROOT_PPN;
 }
 
 // pde is root ppn
@@ -102,23 +144,22 @@ static void pte_init(page_table_entry* pte, u32 index) {
     pte->index = index;
 }
 
-#define KERNEL_ROOT_PPN 0x200000
-#define KERNEL_PAGE_ENTRY 0x201000
-
 void mapping_init() {
-    page_table_entry* root_ppn = (page_table_entry*)KERNEL_ROOT_PPN;
+    KERNEL_ROOT_PPN = allocate_physical_page();
+    page_table_entry* root_ppn = (page_table_entry*)(KERNEL_ROOT_PPN << 12);
     memfree((void*)root_ppn, PAGE_SIZE);
 
-    pte_init(root_ppn, KERNEL_PAGE_ENTRY >> 12);
+    u32 kernel_page_table = allocate_physical_page();
+    pte_init(root_ppn, kernel_page_table);
 
-    page_table_entry* kernel_page_entry = (page_table_entry*)KERNEL_PAGE_ENTRY;
+    page_table_entry* kernel_page_entry = (page_table_entry*)(kernel_page_table << 12);
     memfree((void*)kernel_page_entry, PAGE_SIZE);
     for (i32 i = 0; i < 1024; i++) {
         pte_init(kernel_page_entry + i, i);
         set_in_using(i);
     }
 
-    set_cr3(KERNEL_ROOT_PPN);
+    set_cr3(KERNEL_ROOT_PPN << 12);
     enable_page();
 }
 
@@ -138,5 +179,5 @@ void memory_init(void* ards_cnt_address) {
             }
         }
     }
-    show_physical_pages();
+    // show_physical_pages();
 }

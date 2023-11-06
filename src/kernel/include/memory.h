@@ -25,7 +25,7 @@ typedef struct page_table_entry {
 
 typedef struct page_table_entry page_table_entry;
 
-u32 get_cr3();
+u32 get_root_ppn();
 void set_cr3(u32 pde); // page dir entry => root ppn
 
 typedef struct frame_allocator {
@@ -49,5 +49,8 @@ i32 is_in_using(u32 ppn);
 void free_physical_page(u32 ppn);
 u32 allocate_physical_page(); // return ppn
 void memory_init(void* ards_cnt_address);
+void mapping_init();
 
-void show_physical_pages();
+
+page_table_entry* get_root_page_table();
+page_table_entry* get_second_page_table(u32 vaddr);

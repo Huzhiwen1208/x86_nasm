@@ -7,7 +7,7 @@ mov ax, 0
 mov ds, ax
 mov es, ax
 mov ss, ax
-mov sp, 0x7c00 ; init stack 
+mov sp, 0x7c00 ; init stack
 
 ; read_disk args
 mov edi, 0x500; memory address to load disk content
@@ -16,8 +16,6 @@ mov bl, 10; read 10 sectors
 call read_disk
 
 jmp 0:0x500; jmp to loader
-
-; 0 -> 0x1000
 
 read_disk:
     ; read disk to memory

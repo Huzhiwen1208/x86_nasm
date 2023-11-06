@@ -5,6 +5,7 @@
 #include "include/descriptor.h"
 #include "include/task.h"
 #include "include/interrupt.h"
+#include "include/memory.h"
 
 void _ofp thread_a() {
     asm volatile("sti");
@@ -35,11 +36,13 @@ void kernel_main() {
     info("IDT & PIC initializing...");
     interrupt_init();
     info("IDT & PIC initialized successfully!");
+    info("Clock initializing...");
     clock_init();
-    
-    pcb_manager_init();
-    create_task(thread_a, 0x100000);
-    create_task(thread_b, 0x200000);
-    create_task(thread_c, 0x300000);
-    asm volatile("sti");
+    info("Clock initialized successfully!");
+    asm volatile("cli");
+
+    // pcb_manager_init();
+    // create_task(thread_a, 0x100000);
+    // create_task(thread_b, 0x200000);
+    // create_task(thread_c, 0x300000);
 }

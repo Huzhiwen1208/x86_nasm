@@ -241,6 +241,7 @@ void console_write(const char* buffer, u32 len) {
             row --;
             u32 screen = get_video_memory_base() + ROW_SIZE;
             if (screen + SCR_SIZE >= GPU_MEM_BASE + GPU_MEM_SIZE) {
+                memfree((void*) GPU_MEM_BASE, 0x4000 - SCR_SIZE);
                 memcpy((void*) GPU_MEM_BASE, (void*) screen, SCR_SIZE);
                 screen = GPU_MEM_BASE;
                 set_video_memory_base(screen);

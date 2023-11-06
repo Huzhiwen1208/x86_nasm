@@ -38,8 +38,7 @@ i32 is_full() {
 }
 
 void create_task(void (*entry)(), PCB* pcb) {
-    u32 tmp = (u32)pcb;
-    u32 stack = tmp + PAGE_SIZE;
+    u32 stack = pcb + PAGE_SIZE;
 
     stack -= sizeof(saved_register);
 

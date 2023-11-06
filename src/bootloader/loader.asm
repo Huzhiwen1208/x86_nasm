@@ -68,7 +68,7 @@ memory_checkout:
         jnz memory_checkout_failed
 
         add di, 0x14
-        add word [ards_cnt], 1
+        add dword [ards_cnt], 1
         cmp ebx, 0
         jnz .check
 
@@ -111,7 +111,7 @@ entry_protect_mode:
     mov ecx, 12; seek disk to 12th sector
     mov bl, 200; read 200 sectors
     call read_disk
-    
+    push ards_cnt
     jmp dword code_segment_selector:0x7e00 ; jump to kernel
     ud2
 
@@ -268,6 +268,5 @@ data_segment:
 global_descriptor_table_end:
 
 ards_cnt:
-    dw 0
-
+    dd 0
 ards:

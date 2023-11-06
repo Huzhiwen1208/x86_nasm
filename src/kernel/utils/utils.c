@@ -519,3 +519,10 @@ void memcpy(void* dst, const void* src, size_t n) {
         *d++ = *s++;
     }
 }
+
+void memfree(void* start, size_t n) {
+    u8* s = (u8*)start;
+    while (n--) {
+        *s++ = 0;
+    }
+}

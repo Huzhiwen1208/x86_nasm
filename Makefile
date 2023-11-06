@@ -39,6 +39,7 @@ ifeq ($(wildcard $(TARGET)),)
 	@mkdir -p $(TARGET)/kernel/console
 	@mkdir -p $(TARGET)/kernel/interrupt
 	@mkdir -p $(TARGET)/kernel/task
+	@mkdir -p $(TARGET)/kernel/memory
 endif
 
 # test -----

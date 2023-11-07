@@ -39,8 +39,6 @@ void kernel_main() {
     info("Clock initializing...");
     clock_init();
     info("Clock initialized successfully!");
-    asm volatile("cli");
-
     info("Memory page initializing...");
     mapping_init();
     info("Memory page initialized successfully!");

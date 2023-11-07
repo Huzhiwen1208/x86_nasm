@@ -11,3 +11,5 @@ void set_interrupt_mask(i32 vector);
 void clear_interrupt_mask(i32 vector);
 
 void set_interrupt_handler(i32 vector, void* handler);
+
+u8 get_interrupt_status();

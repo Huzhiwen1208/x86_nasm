@@ -89,7 +89,6 @@ void free_physical_page(u32 ppn) {
     }
 }
 
-// return free ppn
 u32 allocate_physical_page() {
     if (FRAME_ALLOCATOR.free_pages == 0) {
         panic("No free physical page!");
@@ -130,12 +129,14 @@ static void show_physical_pages() {
     printf("---------------show physical page end---------------\n");
 }
 
+
+// memory page method
 u32 get_root_ppn() {
     return KERNEL_ROOT_PPN;
 }
 
-// pde is root ppn
 void set_cr3(u32 pde) {
+    // pde is root ppn
     assert(pde % PAGE_SIZE == 0);
     asm volatile ("movl %%eax, %%cr3" :: "a"(pde));
 }
@@ -156,6 +157,7 @@ static void pte_init(page_table_entry* pte, u32 index) {
     pte->index = index;
 }
 
+// init memory mapping
 void mapping_init() {
     KERNEL_ROOT_PPN = allocate_physical_page_for_kernel();
     page_table_entry* root_ppn = (page_table_entry*)(KERNEL_ROOT_PPN << 12);

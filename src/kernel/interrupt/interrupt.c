@@ -129,3 +129,10 @@ void interrupt_init() {
     pic_init();
     idt_init();
 }
+
+u8 get_interrupt_status() {
+    asm volatile ("pushf");
+    asm volatile ("pop %eax");
+    asm volatile ("and $0x200, %eax");
+    asm volatile ("shr $9, %eax");
+}

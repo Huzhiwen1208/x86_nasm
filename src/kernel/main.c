@@ -41,13 +41,12 @@ void kernel_main() {
     info("Clock initialized successfully!");
     asm volatile("cli");
 
-    info("Memory map initializing...");
+    info("Memory page initializing...");
     mapping_init();
-    info("Memory map initialized successfully!");
+    info("Memory page initialized successfully!");
 
     // pcb_manager_init();
     // create_task(thread_a, 0x100000);
     // create_task(thread_b, 0x200000);
     // create_task(thread_c, 0x300000);
-    u32 paddr = get_physical_address(0x3ffff0);
 }

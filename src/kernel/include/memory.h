@@ -32,18 +32,20 @@ typedef struct frame_allocator {
     /* 
         index refers to ppn
         0b000000xx:
-            00: not in using & not valid
-            01: not in using & valid
-            10: in using & not valid
-            11: in using & valid
+            00: not in using & belong to kernel
+            01: not in using & not belong to kernel
+            10: in using & belong to kernel
+            11: in using & not belong to kernel
     */
     u8 pages[MAX_PAGES]; 
     u32 total_pages;
     u32 free_pages;
+    u32 kernel_pages; // total pages for kernel
+    u32 kernel_free_pages;
 } frame_allocator;
 
 
-i32 is_valid(u32 ppn);
+i32 is_belong_kernel(u32 ppn);
 i32 is_in_using(u32 ppn);
 
 void free_physical_page(u32 ppn);

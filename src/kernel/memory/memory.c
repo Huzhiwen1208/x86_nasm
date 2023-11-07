@@ -46,15 +46,22 @@ u32 get_physical_address(u32 vaddr) {
     return (ppn << 12) + offset;
 }
 
+
+// frame allocator method
 static void frame_allocator_empty_init() {
     FRAME_ALLOCATOR.total_pages = 0;
     FRAME_ALLOCATOR.free_pages = 0;
+    FRAME_ALLOCATOR.kernel_pages = 1024;
+    FRAME_ALLOCATOR.kernel_free_pages = 0;
     for (i32 i = 0; i < MAX_PAGES; i++) {
-        FRAME_ALLOCATOR.pages[i] = 0b00;
+        FRAME_ALLOCATOR.pages[i] = 0b00; // not in using & not belong to kernel
+        if (i < 1024) {
+            FRAME_ALLOCATOR.pages[i] = 0b01; // not in using & belong to kernel
+        }
     }
 }
 
-i32 is_valid(u32 ppn) {
+i32 is_belong_kernel(u32 ppn) {
     return FRAME_ALLOCATOR.pages[ppn] & 0b01;
 }
 
@@ -74,22 +81,12 @@ static void set_in_using(u32 ppn) {
     }
 }
 
-static void set_valid(u32 ppn) {
-    if (!is_valid(ppn)) {
-        FRAME_ALLOCATOR.pages[ppn] |= 0b01;
-    }
-}
-
-static void set_invalid(u32 ppn) {
-    if (is_valid(ppn)) {
-        FRAME_ALLOCATOR.pages[ppn] &= 0b10;
-    }
-}
-
 void free_physical_page(u32 ppn) {
-    assert(is_valid(ppn));
     set_not_in_using(ppn);
     FRAME_ALLOCATOR.free_pages++;
+    if (is_belong_kernel(ppn)) {
+        FRAME_ALLOCATOR.kernel_free_pages++;
+    }
 }
 
 // return free ppn
@@ -99,9 +96,24 @@ u32 allocate_physical_page() {
     }
 
     for (i32 i = 0; i < MAX_PAGES; i++) {
-        if (is_valid(i) && !is_in_using(i)) {
+        if (!is_belong_kernel(i) && !is_in_using(i)) {
             set_in_using(i);
             FRAME_ALLOCATOR.free_pages--;
+            return i;
+        }
+    }
+}
+
+u32 allocate_physical_page_for_kernel() {
+    if (FRAME_ALLOCATOR.free_pages == 0) {
+        panic("No free physical page!");
+    }
+
+    for (i32 i = 0; i < MAX_PAGES; i++) {
+        if (is_belong_kernel(i) && !is_in_using(i)) {
+            set_in_using(i);
+            FRAME_ALLOCATOR.free_pages--;
+            FRAME_ALLOCATOR.kernel_free_pages--;
             return i;
         }
     }
@@ -111,7 +123,7 @@ static void show_physical_pages() {
     printf("---------------show physical pages---------------\n");
     printf("Total pages: %d, Free pages: %d\n", FRAME_ALLOCATOR.total_pages, FRAME_ALLOCATOR.free_pages);
     for (i32 i = 0; i < MAX_PAGES; i++) {
-        if (is_valid(i)) {
+        if (is_belong_kernel(i)) {
             printf("[ppn: %d] %s\n", i, is_in_using(i) ? "in using" : "not in using");
         }
     }
@@ -145,16 +157,19 @@ static void pte_init(page_table_entry* pte, u32 index) {
 }
 
 void mapping_init() {
-    KERNEL_ROOT_PPN = allocate_physical_page();
+    KERNEL_ROOT_PPN = allocate_physical_page_for_kernel();
     page_table_entry* root_ppn = (page_table_entry*)(KERNEL_ROOT_PPN << 12);
     memfree((void*)root_ppn, PAGE_SIZE);
 
-    u32 kernel_page_table = allocate_physical_page();
+    u32 kernel_page_table = allocate_physical_page_for_kernel();
     pte_init(root_ppn, kernel_page_table);
 
     page_table_entry* kernel_page_entry = (page_table_entry*)(kernel_page_table << 12);
     memfree((void*)kernel_page_entry, PAGE_SIZE);
-    for (i32 i = 0; i < 1024; i++) {
+
+    for (i32 i = 0; i < FRAME_ALLOCATOR.kernel_pages - FRAME_ALLOCATOR.kernel_free_pages; i++) {
+        if (i == 0) continue; // ensure 0x0 is null pointer, but we can't access 0x0 ~ 0xfff yet(first page)
+
         pte_init(kernel_page_entry + i, i);
         set_in_using(i);
     }
@@ -172,12 +187,12 @@ void memory_init(void* ards_cnt_address) {
         u32 frame_start = (current_ard.base + PAGE_SIZE - 1) >> 12;
         u32 frame_end = (current_ard.base + current_ard.length) >> 12;
         FRAME_ALLOCATOR.total_pages += frame_end - frame_start;
-        if (current_ard.type == 1 && frame_start >= 256) {
+        if (current_ard.type == 1 && frame_start >= 256) { // manage 1M - 32M
             for (i32 j = frame_start; j < frame_end; j++) {
-                set_valid(j);
                 free_physical_page(j);
             }
         }
     }
+
     // show_physical_pages();
 }

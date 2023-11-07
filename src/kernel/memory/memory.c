@@ -46,6 +46,11 @@ u32 get_physical_address(u32 vaddr) {
     return (ppn << 12) + offset;
 }
 
+// ppn
+u32 get_paddr_from_ppn(u32 ppn) {
+    return ppn << 12;
+}
+
 
 // frame allocator method
 static void frame_allocator_empty_init() {
@@ -169,11 +174,12 @@ void mapping_init() {
     page_table_entry* kernel_page_entry = (page_table_entry*)(kernel_page_table << 12);
     memfree((void*)kernel_page_entry, PAGE_SIZE);
 
-    for (i32 i = 0; i < FRAME_ALLOCATOR.kernel_pages - FRAME_ALLOCATOR.kernel_free_pages; i++) {
+    for (i32 i = 0; i < 1024; i++) {
         if (i == 0) continue; // ensure 0x0 is null pointer, but we can't access 0x0 ~ 0xfff yet(first page)
 
         pte_init(kernel_page_entry + i, i);
-        set_in_using(i);
+        if (i < FRAME_ALLOCATOR.kernel_pages - FRAME_ALLOCATOR.kernel_free_pages) 
+            set_in_using(i);
     }
 
     set_cr3(KERNEL_ROOT_PPN << 12);

@@ -56,3 +56,5 @@ void mapping_init();
 
 page_table_entry* get_root_page_table();
 page_table_entry* get_second_page_table(u32 vaddr);
+
+u32 get_paddr_from_ppn(u32 ppn);

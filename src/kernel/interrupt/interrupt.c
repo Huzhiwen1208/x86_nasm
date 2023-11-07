@@ -136,3 +136,11 @@ u8 get_interrupt_status() {
     asm volatile ("and $0x200, %eax");
     asm volatile ("shr $9, %eax");
 }
+
+void restore_interrupt_status(u8 status) {
+    if (status) {
+        asm volatile ("sti");
+    }else {
+        asm volatile ("cli");
+    }
+}

@@ -43,8 +43,9 @@ void kernel_main() {
     mapping_init();
     info("Memory page initialized successfully!");
 
-    // pcb_manager_init();
-    // create_task(thread_a, 0x100000);
-    // create_task(thread_b, 0x200000);
-    // create_task(thread_c, 0x300000);
+    pcb_manager_init();
+    create_task(thread_a, get_paddr_from_ppn(allocate_physical_page_for_kernel()));
+    create_task(thread_b, get_paddr_from_ppn(allocate_physical_page_for_kernel()));
+    create_task(thread_c, get_paddr_from_ppn(allocate_physical_page_for_kernel()));
+    asm volatile("sti");
 }

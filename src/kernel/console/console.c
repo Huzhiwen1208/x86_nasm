@@ -2,6 +2,7 @@
 #include "../include/type.h"
 #include "../include/io.h"
 #include "../include/utils.h"
+#include "../include/interrupt.h"
 
 #define CRT_ADDR_REG 0x3D4 // CRT(6845) address register
 #define CRT_DATA_REG 0x3D5 // CRT(6845) data register
@@ -195,6 +196,8 @@ void console_write(const char* buffer, u32 len) {
 
     u16* ptr = (u16*) (get_video_memory_base() + row * ROW_SIZE + col*2);
     while (len--) {
+        u8 status = get_interrupt_status();
+        asm volatile ("cli");
         char ch = *buffer++;
         switch (ch) {
             case NUL:
@@ -254,6 +257,7 @@ void console_write(const char* buffer, u32 len) {
         }
 
         ptr = (u16*) (get_video_memory_base() + row * ROW_SIZE + col*2);
+        restore_interrupt_status(status);
     }
 
     c->row = row;

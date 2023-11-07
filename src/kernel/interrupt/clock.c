@@ -43,7 +43,6 @@ BCD: Binary Coded Decimal
 
 void clock_handler(i32 vector) {
     assert(vector == 0x20);
-    debug("Trigger clock interrupt");
     send_eoi(vector);
     schedule();
 }

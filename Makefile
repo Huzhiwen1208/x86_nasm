@@ -99,6 +99,9 @@ endif
 debug: build 
 	qemu-system-i386 -m 32M -boot c -hda image/master.img -s -S
 
+vmdk: $(IMG)
+	qemu-img convert -pO vmdk $< ~/Desktop/v.vmdk
+
 .PHONY: clean
 clean:
 	rm -rf *.bin *.o *.lock *.ini *.s *.asm

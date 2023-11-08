@@ -71,3 +71,8 @@ typedef struct interrupt_descriptor {
 
 > Exception: 0x0 ~ 0x1f = 32
 > OuteralInt: 0x20 ~ 0x2f = 16
+> Syscall: 0x80
+
+## Syscall
+### yield
+### get_time

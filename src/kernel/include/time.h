@@ -5,4 +5,4 @@ typedef struct time_val {
     u32 usec; // current us = sec * 1000 * 1000 + usec
 } time_val;
 
-void get_time_ms(time_val* tv);
+void get_time(time_val* tv);

@@ -30,7 +30,7 @@ u32 trap_handler(u32 syscall_num, u32 arg1, u32 arg2, u32 arg3) {
         syscall_sleep(arg1);
         break;
     case SYSCALL_GETTIME_MS:
-        get_time_ms((time_val*)arg1);
+        get_time((time_val*)arg1);
         break;
     default:
         panic("Unknown syscall number: %d", syscall_num);

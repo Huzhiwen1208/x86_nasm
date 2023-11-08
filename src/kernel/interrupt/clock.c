@@ -76,7 +76,7 @@ void clock_init() {
 
 // the max usec of 32bits is 4294967295, which is about 1.19 hours
 // should optimize this function to support larger time
-void get_time_ms(time_val* tv) {
+void get_time(time_val* tv) {
     u32 usec = jiffies * JIFFY * 1000 + (CLOCK_COUNTER - read_counter0()) * (tick_s * 1000 * 1000);
     tv->sec = usec / (1000 * 1000);
     tv->usec = usec % (1000 * 1000);

@@ -461,7 +461,8 @@ void panic(const char *fmt, ...)
     i32 i = vsprintf(buf, fmt, args);
     va_end(args);
 
-    printf("[PANIC] %s\n", buf);
+    printf("\n[PANIC] %s\n", buf);
+    suspend();
 }
 // ------ assert utils end
 
@@ -472,7 +473,7 @@ void debug_info(const char *file, i32 line, const char *fmt, ...) {
     va_start(args, fmt);
     vsprintf(buf, fmt, args);
 
-    println_with_color(CYAN, "[DEBUG] %s:%d %s", file, line, buf);
+    println_with_color(CYAN, "\n[DEBUG] %s:%d %s", file, line, buf);
 }
 
 void trace_info(const char *file, i32 line, const char *fmt, ...) {
@@ -481,7 +482,7 @@ void trace_info(const char *file, i32 line, const char *fmt, ...) {
     va_start(args, fmt);
     vsprintf(buf, fmt, args);
 
-    println_with_color(GRAY, "[TRACE] %s:%d %s", file, line, buf);
+    println_with_color(GRAY, "\n[TRACE] %s:%d %s", file, line, buf);
 }
 
 void info_info(const char *file, i32 line, const char *fmt, ...) {
@@ -490,7 +491,7 @@ void info_info(const char *file, i32 line, const char *fmt, ...) {
     va_start(args, fmt);
     vsprintf(buf, fmt, args);
 
-    println_with_color(GREEN, "[INFO] %s:%d %s", file, line, buf);
+    println_with_color(GREEN, "\n[INFO] %s:%d %s", file, line, buf);
 }
 
 void warn_info(const char *file, i32 line, const char *fmt, ...) {
@@ -499,7 +500,7 @@ void warn_info(const char *file, i32 line, const char *fmt, ...) {
     va_start(args, fmt);
     vsprintf(buf, fmt, args);
 
-    println_with_color(YELLOW, "[WARN] %s:%d %s", file, line, buf);
+    println_with_color(YELLOW, "\n[WARN] %s:%d %s", file, line, buf);
 }
 
 void error_info(const char *file, i32 line, const char *fmt, ...) {
@@ -508,7 +509,7 @@ void error_info(const char *file, i32 line, const char *fmt, ...) {
     va_start(args, fmt);
     vsprintf(buf, fmt, args);
 
-    println_with_color(RED, "[DEBUG] %s:%d %s", file, line, buf);
+    println_with_color(RED, "\n[ERROR] %s:%d %s", file, line, buf);
 }
 // ------ log utils end
 
@@ -526,4 +527,8 @@ void memfree(void* start, size_t n) {
     while (n--) {
         *s++ = 0;
     }
+}
+
+void suspend() {
+    while(true);
 }

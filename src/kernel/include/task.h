@@ -2,8 +2,16 @@
 
 #define TASK_SIZE 1024
 
+enum PCB_STATUS {
+    Running,
+    Block,
+    Ready
+};
+
 typedef struct PCB {
     u32* stack;
+    enum PCB_STATUS status;
+    u64 sleep_start_jeffy;
 } PCB;
 
 typedef struct saved_register {
@@ -15,22 +23,15 @@ typedef struct saved_register {
 } saved_register;
 
 typedef struct pcb_manager {
+    PCB* current;
     u32 front;
     u32 rear;
-    PCB* current;
     PCB* tasks[TASK_SIZE];
+    PCB* wait_tasks[TASK_SIZE];
+    u32 wait_front;
+    u32 wait_rear;
 } pcb_manager;
-
-void pcb_manager_init();
-void enqueue(PCB* pcb);
-PCB* dequeue();
-i32 is_empty();
-i32 is_full();
-
-void create_task(void (*entry)(), PCB* pcb);
-PCB *get_current_task();
-
-void schedule();
 
 void task_init();
 void task_test();
+pcb_manager get_pcb_manager();

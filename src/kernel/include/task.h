@@ -39,7 +39,7 @@ typedef struct pcb_manager {
     u32 wait_front;
     u32 wait_rear;
 
-    sleep_pcb* sleep_pcb_list;    
+    sleep_pcb* sleep_pcb_list; // priority queue
 } pcb_manager;
 
 void task_init();

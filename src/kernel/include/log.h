@@ -1,3 +1,5 @@
+#include "type.h"
+
 void debug_info(const char *file, i32 line, const char *fmt, ...);
 void trace_info(const char *file, i32 line, const char *fmt, ...);
 void info_info(const char *file, i32 line, const char *fmt, ...);

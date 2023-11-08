@@ -1,32 +1,14 @@
-#include "include/type.h"
-#include "include/console.h"
-#include "include/stdio.h"
 #include "include/log.h"
-#include "include/descriptor.h"
-#include "include/task.h"
-#include "include/interrupt.h"
-#include "include/memory.h"
+#include "include/type.h"
 
-void _ofp thread_a() {
-    asm volatile("sti");
-    for (;;) {
-        printf("A");
-    }
-}
-
-void _ofp thread_b() {
-    asm volatile("sti");
-    for (;;) {
-        printf("B");
-    }
-}
-
-void _ofp thread_c() {
-    asm volatile("sti");
-    for (;;) {
-        printf("C");
-    }
-}
+extern void console_init();
+extern void gdt_init();
+extern void interrupt_init();
+extern void clock_init();
+extern void mapping_init();
+extern void task_init();
+extern void task_test();
+extern u32 syscall(u32 num,u32 arg1,u32 arg2,u32 arg3);
 
 void kernel_main() {
     console_init();
@@ -42,10 +24,6 @@ void kernel_main() {
     info("Memory page initializing...");
     mapping_init();
     info("Memory page initialized successfully!");
-
-    pcb_manager_init();
-    create_task(thread_a, get_paddr_from_ppn(allocate_physical_page_for_kernel()));
-    create_task(thread_b, get_paddr_from_ppn(allocate_physical_page_for_kernel()));
-    create_task(thread_c, get_paddr_from_ppn(allocate_physical_page_for_kernel()));
-    asm volatile("sti");
+    task_init();
+    task_test();
 }

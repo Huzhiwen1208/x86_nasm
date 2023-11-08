@@ -1,5 +1,6 @@
 #include "../include/task.h"
 #include "../include/constant.h"
+#include "../include/syscall.h"
 
 pcb_manager PCB_MANAGER;
 
@@ -85,4 +86,33 @@ void schedule() {
     enqueue(PCB_MANAGER.current);
     PCB_MANAGER.current = next_task;
     __switch(current, next_task);
+}
+
+void task_init() {
+    pcb_manager_init();
+}
+
+void thread_a() {
+    for (;;) {
+        printf("A");
+        syscall(SYSCALL_YIELD, 0, 0, 0);
+    }
+}
+void thread_b() {
+    for (;;) {
+        printf("B");
+        syscall(SYSCALL_YIELD, 0, 0, 0);
+    }
+}
+void thread_c() {
+    for (;;) {
+        printf("C");
+        syscall(SYSCALL_YIELD, 0, 0, 0);
+    }
+}
+void task_test() {
+    create_task(thread_a, get_paddr_from_ppn(allocate_physical_page_for_kernel()));
+    create_task(thread_b, get_paddr_from_ppn(allocate_physical_page_for_kernel()));
+    create_task(thread_c, get_paddr_from_ppn(allocate_physical_page_for_kernel()));
+    asm volatile ("sti");
 }

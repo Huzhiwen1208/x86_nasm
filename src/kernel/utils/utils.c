@@ -461,7 +461,7 @@ void panic(const char *fmt, ...)
     i32 i = vsprintf(buf, fmt, args);
     va_end(args);
 
-    printf("PANIC: %s \n", buf);
+    printf("[PANIC] %s\n", buf);
 }
 // ------ assert utils end
 

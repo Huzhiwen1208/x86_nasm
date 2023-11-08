@@ -15,6 +15,7 @@
 
 // handler entry table in asm & handler list in c
 extern void* handler_entry_table[IDT_SIZE];
+extern void __all_traps();
 void* handler_list[IDT_SIZE];
 
 // methods
@@ -101,25 +102,37 @@ struct descriptor_pointer idt_pointer;
 
 void idt_init() {
     for (i32 i = 0; i < EXCEPTION_SIZE + OUTER_INTERRUPT_SIZE; i++) {
-        void* trap_handler = handler_entry_table[i];
-        idt[i].offset_low = (u32)trap_handler & 0xffff;
+        void* interrupt_handler = handler_entry_table[i];
+        idt[i].offset_low = (u32)interrupt_handler & 0xffff;
         idt[i].selector = 1 << 3;
         idt[i].reserved = 0;
         idt[i].type = 0b1110;
         idt[i].segment = 0;
         idt[i].DPL = 0;
         idt[i].present = 1;
-        idt[i].offset_high = ((u32)trap_handler >> 16) & 0xffff;
+        idt[i].offset_high = ((u32)interrupt_handler >> 16) & 0xffff;
     }
+    // syscall idt
+    idt[0x80].offset_low = (u32)__all_traps & 0xffff;
+    idt[0x80].selector = 1 << 3;
+    idt[0x80].reserved = 0;
+    idt[0x80].type = 0b1110;
+    idt[0x80].segment = 0;
+    idt[0x80].DPL = 3;
+    idt[0x80].present = 1;
+    idt[0x80].offset_high = ((u32)__all_traps >> 16) & 0xffff;
+
     idt_pointer.limit = sizeof(struct interrupt_descriptor) * IDT_SIZE - 1;
     idt_pointer.base = (u32)idt;
 
+    // exception interrupt handler
     for (i32 i = 0; i < EXCEPTION_SIZE; i++) {
-        handler_list[i] = exception_handler;
+        set_interrupt_handler(i, exception_handler);
     }
 
+    // outeral interrupt handler
     for (i32 i = 0; i < OUTER_INTERRUPT_SIZE; i++) {
-        handler_list[i + EXCEPTION_SIZE] = outer_handler_default;
+        set_interrupt_handler(i+EXCEPTION_SIZE, outer_handler_default);
     }
 
     asm volatile ("lidt %0" : : "m"(idt_pointer));

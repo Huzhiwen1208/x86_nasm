@@ -32,3 +32,5 @@ PCB *get_current_task();
 
 void schedule();
 
+void task_init();
+void task_test();

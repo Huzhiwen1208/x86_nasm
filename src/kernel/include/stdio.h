@@ -1,3 +1,5 @@
+#include "type.h"
+
 i32 printf(const char *fmt, ...);
 
 i32 println(const char *fmt, ...);

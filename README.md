@@ -76,3 +76,6 @@ typedef struct interrupt_descriptor {
 ## Syscall
 ### yield
 ### get_time
+read from count0 register, showing code at `static u16 read_counter0`
+### sleep
+implemented priority_queue(LinkedList) to maintain sleep_queue, showing code at ``

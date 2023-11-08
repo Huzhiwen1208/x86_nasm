@@ -45,18 +45,33 @@ const float tick_s = 1.0 / OSCILLATOR; // one tick in s
 
 u64 jiffies; // system jiffies since boot
 
-static void clock_handler(i32 vector) {
-    jiffies ++;
-    assert(vector == 0x20);
-    send_eoi(vector);
-    schedule();
-}
-
 static u16 read_counter0() {
     writeb(PIT_CTRL, 0b00110100); // 00 00 000 0
     u8 low = readb(COUNTER0);
     u8 high = readb(COUNTER0);
     return (high << 8) | low;
+}
+
+// the max usec of 32bits is 4294967295, which is about 1.19 hours
+// should optimize this function to support larger time
+void get_time(time_val* tv) {
+    u32 usec = jiffies * JIFFY * 1000 + (CLOCK_COUNTER - read_counter0()) * (tick_s * 1000 * 1000);
+    tv->sec = usec / (1000 * 1000);
+    tv->usec = usec % (1000 * 1000);
+}
+
+u32 get_time_ms() {
+    return jiffies * JIFFY + (CLOCK_COUNTER - read_counter0()) * (tick_s * 1000);
+}
+
+static void clock_handler(i32 vector) {
+    jiffies ++;
+    assert(vector == 0x20);
+    send_eoi(vector);
+
+    // checkout sleep queue
+    sleep_wakeup(get_time_ms());
+    schedule();
 }
 
 // Initialize Programmable Interval Timer
@@ -72,12 +87,4 @@ void clock_init() {
     set_interrupt_mask(0x20);   
     asm volatile ("cli");
     jiffies = 0;
-}
-
-// the max usec of 32bits is 4294967295, which is about 1.19 hours
-// should optimize this function to support larger time
-void get_time(time_val* tv) {
-    u32 usec = jiffies * JIFFY * 1000 + (CLOCK_COUNTER - read_counter0()) * (tick_s * 1000 * 1000);
-    tv->sec = usec / (1000 * 1000);
-    tv->usec = usec % (1000 * 1000);
 }

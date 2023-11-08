@@ -6,3 +6,4 @@ typedef struct time_val {
 } time_val;
 
 void get_time(time_val* tv);
+u32 get_time_ms();

@@ -9,6 +9,7 @@ extern void clock_init();
 extern void mapping_init();
 extern void task_init();
 extern void task_test();
+extern u32 syscall(u32 num,u32 arg1,u32 arg2,u32 arg3);
 
 void kernel_main() {
     console_init();

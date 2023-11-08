@@ -1,6 +1,6 @@
 #include "type.h"
 
-#define PAGE_SIZE (1 << 12)
+#define PAGE_SIZE 4096
 #define MAX_PAGES (8 << 12)
 
 typedef struct address_range_descriptor {

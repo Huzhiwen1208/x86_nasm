@@ -5,6 +5,8 @@
 #include "../include/task.h"
 #include "../include/time.h"
 
+extern pcb_manager PCB_MANAGER;
+
 static u32 syscall_test(u32 arg1, u32 arg2, u32 arg3) {
     printf("syscall_test: arg: {%d, %d, %d}\n", arg1, arg2, arg3);
     return 0;
@@ -15,8 +17,10 @@ static void syscall_yield() {
 }
 
 static void syscall_sleep(u32 ms) {
-    pcb_manager PCB_MANAGER = get_pcb_manager();
-    
+    PCB* current = get_current_task();
+
+    sleep_enqueue(current, ms + get_time_ms());
+    schedule();
 }
 
 u32 trap_handler(u32 syscall_num, u32 arg1, u32 arg2, u32 arg3) {

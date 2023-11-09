@@ -1,45 +1,17 @@
 #include "../include/utils.h"
 #include "../include/type.h"
-#include "../include/io.h"
 #include "../include/variable_args.h"
 #include "../include/stdio.h"
-#include "../include/log.h"
-#include "../include/console.h"
 
-// string utils ------
-size_t length(const char* str) {
-    size_t len = 0;
-    while (str[len]) {
-        len++;
-    }
-    return len;
-}
+#define ZEROPAD 0x01
+#define SIGN 0x02
+#define PLUS 0x04
+#define SPACE 0x08
+#define LEFT 0x10
+#define SPECIAL 0x20
+#define SMALL 0x40
+#define DOUBLE 0x80
 
-void concat(char* s1, char* s2) {
-    size_t len = length(s1);
-    char* ptr = s1 + len;
-    char* q = s2;
-    while (q != NULL) {
-        *ptr++ = *q++;
-    }
-}
-
-i32 is_digit(char c) {
-    return c >= '0' && c <= '9';
-}
-// ------ string utils end
-
-// print utils ------
-#define ZEROPAD 0x01 // 填充零
-#define SIGN 0x02    // unsigned/signed long
-#define PLUS 0x04    // 显示加
-#define SPACE 0x08   // 如是加，则置空格
-#define LEFT 0x10    // 左调整
-#define SPECIAL 0x20 // 0x
-#define SMALL 0x40   // 使用小写字母
-#define DOUBLE 0x80  // 浮点数
-
-// 将字符数字串转换成整数，并将指针前移
 static i32 skip_atoi(const char **s)
 {
     i32 i = 0;
@@ -442,9 +414,7 @@ i32 print_with_color(u8 color, const char *fmt, ...)
 
     return i;
 }
-// ------ print utils end
 
-// assert utils ------
 void assertion_failure(char *exp, char *file, char *base, i32 line)
 {
     printf("Assertion: %s failed!, %s:%d\n", exp, file, line);
@@ -462,75 +432,4 @@ void panic(const char *fmt, ...)
 
     printf("\n[PANIC] %s\n", buf);
     suspend();
-}
-// ------ assert utils end
-
-// log utils ------
-void debug_info(const char *file, i32 line, const char *fmt, ...) {
-    char buf[1024];
-    va_list args;
-    va_start(args, fmt);
-    vsprintf(buf, fmt, args);
-
-    println_with_color(CYAN, "\n[DEBUG] %s:%d %s", file, line, buf);
-}
-
-void trace_info(const char *file, i32 line, const char *fmt, ...) {
-    char buf[1024];
-    va_list args;
-    va_start(args, fmt);
-    vsprintf(buf, fmt, args);
-
-    println_with_color(GRAY, "\n[TRACE] %s:%d %s", file, line, buf);
-}
-
-void info_info(const char *file, i32 line, const char *fmt, ...) {
-    char buf[1024];
-    va_list args;
-    va_start(args, fmt);
-    vsprintf(buf, fmt, args);
-
-    println_with_color(GREEN, "\n[INFO] %s:%d %s", file, line, buf);
-}
-
-void warn_info(const char *file, i32 line, const char *fmt, ...) {
-    char buf[1024];
-    va_list args;
-    va_start(args, fmt);
-    vsprintf(buf, fmt, args);
-
-    println_with_color(YELLOW, "\n[WARN] %s:%d %s", file, line, buf);
-}
-
-void error_info(const char *file, i32 line, const char *fmt, ...) {
-    char buf[1024];
-    va_list args;
-    va_start(args, fmt);
-    vsprintf(buf, fmt, args);
-
-    println_with_color(RED, "\n[ERROR] %s:%d %s", file, line, buf);
-}
-// ------ log utils end
-
-
-// memory utils ------
-void memcpy(void* dst, const void* src, size_t n) {
-    u8* d = (u8*)dst;
-    const u8* s = (const u8*)src;
-    while (n--) {
-        *d++ = *s++;
-    }
-}
-
-// clear memory from start to start+n, byte by byte
-void memfree(void* start, size_t n) {
-    u8* s = (u8*)start;
-    while (n--) {
-        *s++ = 0;
-    }
-}
-// ------ memory utils end
-
-void suspend() {
-    while(true);
 }

@@ -2,8 +2,7 @@
 #define TASK_H
 
 #include "type.h"
-
-#define TASK_SIZE 1024
+#include "constant.h"
 
 enum PCB_STATUS {
     Running,

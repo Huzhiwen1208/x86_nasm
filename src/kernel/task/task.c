@@ -223,7 +223,9 @@ void thread_a() {
     asm volatile ("sti");
     println("Entry A thread at time: %d", get_time_ms());
     syscall(SYSCALL_MUTEX_LOCK, 0, 0, 0);
-    println("A get lock at time: %d", get_time_ms());
+    println("A got lock at time: %d", get_time_ms());
+    println("A second get lock at time: %d", get_time_ms());
+    syscall(SYSCALL_MUTEX_LOCK, 0, 0, 0);
     syscall(SYSCALL_SLEEP, 1000, 0, 0);
     println("A sleep done at time: %d", get_time_ms());
 

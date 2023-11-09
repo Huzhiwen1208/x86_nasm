@@ -1,7 +1,5 @@
 #include "type.h"
-
-// GDT
-#define GDT_SIZE 8192
+#include "constant.h"
 
 typedef struct descriptor_pointer {
     u16 limit;
@@ -25,12 +23,6 @@ typedef struct global_descriptor {
 
 void gdt_init();
 
-
-
-// IDT
-#define IDT_SIZE 256
-#define EXCEPTION_SIZE 20
-#define OUTER_INTERRUPT_SIZE 16
 
 typedef struct interrupt_descriptor {
     u16 offset_low; // 0 - 15 low bit, offset in segment

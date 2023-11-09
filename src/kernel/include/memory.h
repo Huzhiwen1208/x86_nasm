@@ -2,9 +2,7 @@
 #define __MEMORY_H__
 
 #include "type.h"
-
-#define PAGE_SIZE 4096
-#define MAX_PAGES (8 << 12)
+#include "constant.h"
 
 typedef struct address_range_descriptor {
     u64 base;

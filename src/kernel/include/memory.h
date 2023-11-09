@@ -1,3 +1,6 @@
+#ifndef __MEMORY_H__
+#define __MEMORY_H__
+
 #include "type.h"
 
 #define PAGE_SIZE 4096
@@ -58,3 +61,7 @@ page_table_entry* get_root_page_table();
 page_table_entry* get_second_page_table(u32 vaddr);
 
 u32 get_paddr_from_ppn(u32 ppn);
+u32 get_ppn_from_paddr_floor(u32 paddr);
+u32 get_ppn_from_paddr_ceil(u32 paddr);
+
+#endif

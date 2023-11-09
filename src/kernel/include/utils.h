@@ -1,3 +1,6 @@
+#ifndef __UTILS_H__
+#define __UTILS_H__
+
 #include "type.h"
 
 size_t length(const char* str);
@@ -6,3 +9,5 @@ i32 is_digit(char c);
 void memcpy(void* dst, const void* src, size_t n);
 void memfree(void* start, size_t n);
 void suspend();
+
+#endif

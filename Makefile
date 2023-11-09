@@ -40,6 +40,7 @@ ifeq ($(wildcard $(TARGET)),)
 	@mkdir -p $(TARGET)/kernel/interrupt
 	@mkdir -p $(TARGET)/kernel/task
 	@mkdir -p $(TARGET)/kernel/memory
+	@mkdir -p $(TARGET)/kernel/mutex
 endif
 
 # test -----

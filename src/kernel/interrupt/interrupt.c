@@ -13,26 +13,32 @@
 #define PIC_S_DATA 0xa1 // Slave PIC data port
 #define PIC_EOI 0x20    // End-of-interrupt command code
 
-// handler entry table in asm & handler list in c
+/// @brief entry table in asm, register to IDT
 extern void* handler_entry_table[IDT_SIZE];
+/// @brief all traps handler in asm, register to IDT[0x80]
 extern void __all_traps();
+/// @brief used in asm
 void* handler_list[IDT_SIZE];
 
 // methods
-// exception handler
+/// @brief default exception handler
+/// @param vector
 void exception_handler(i32 vector) {
     trace("Exception: %d has been invoked", vector);
     while (1);
 }
 
-// default outer interrupt handler
+/// @brief default outer interrupt handler
+/// @param vector 
 void outer_handler_default(int vector)
 {
     trace("Outer interrupt: %d has been invoked", vector);
     send_eoi(vector);
 }
 
-// set interrupt mask
+/// @brief open interrupt for specific vector
+///             0 refers to open, 1 refers to close
+/// @param vector 
 void set_interrupt_mask(i32 vector) {
     assert(vector >= 0x20 && vector < 0x30);
     vector -= 0x20;
@@ -48,6 +54,8 @@ void set_interrupt_mask(i32 vector) {
     }
 }
 
+/// @brief close interrupt for specific vector
+/// @param vector 
 void clear_interrupt_mask(i32 vector) {
     assert(vector >= 0x20 && vector < 0x30);
     vector -= 0x20;
@@ -63,11 +71,14 @@ void clear_interrupt_mask(i32 vector) {
     }
 }
 
+/// @brief set interrupt handler for specific vector, override default handler
+/// @param vector 
+/// @param handler 
 void set_interrupt_handler(i32 vector, void* handler) {
     handler_list[vector] = handler;
 }
 
-// Initialize Programmable Interrupt Controller
+/// @brief Initialize Programmable Interrupt Controller
 void pic_init() {
     writeb(PIC_M_CTRL, 0b00010001);
     writeb(PIC_M_DATA, 0x20);
@@ -83,7 +94,7 @@ void pic_init() {
     writeb(PIC_S_DATA, 0b11111111);
 }
 
-// PIC: notify CPU that interrupt has been handled
+/// @brief PIC: notify CPU that interrupt has been handled
 void send_eoi(int vector) {
     if (vector >= 0x20 && vector < 0x28) {
         writeb(PIC_M_CTRL, PIC_EOI);
@@ -96,8 +107,9 @@ void send_eoi(int vector) {
 }
 
 
-// IDT
+/// @brief IDT
 struct interrupt_descriptor idt[IDT_SIZE];
+/// @brief IDT pointer
 struct descriptor_pointer idt_pointer;
 
 void idt_init() {
@@ -143,6 +155,8 @@ void interrupt_init() {
     idt_init();
 }
 
+/// @brief get interrupt status(IF)
+/// @return status 0: close, 1: open
 u8 get_interrupt_status() {
     asm volatile ("pushf");
     asm volatile ("pop %eax");
@@ -150,6 +164,8 @@ u8 get_interrupt_status() {
     asm volatile ("shr $9, %eax");
 }
 
+/// @brief restore former interrupt status
+/// @param status 
 void restore_interrupt_status(u8 status) {
     if (status) {
         asm volatile ("sti");

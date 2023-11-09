@@ -1,6 +1,7 @@
 [bits 32]
 section .text
 
+; void __switch(pcb_t *current, pcb_t *next);
 global __switch
 __switch:
     push ebp

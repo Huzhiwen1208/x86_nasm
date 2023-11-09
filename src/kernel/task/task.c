@@ -5,22 +5,25 @@
 #include "../include/log.h"
 #include "../include/time.h"
 #include "../include/memory.h"
+#include "../include/utils.h"
 
+/// @brief the global task manager
 pcb_manager PCB_MANAGER;
+/// @brief the idle task
 PCB* idle_pcb;
+/// @brief initialize the task manager
 void pcb_manager_init() {
     PCB_MANAGER.front = 0;
     PCB_MANAGER.rear = 0;
     PCB_MANAGER.current = 0;
 
-    PCB_MANAGER.wait_front = 0;
-    PCB_MANAGER.wait_rear = 0;
-
     PCB_MANAGER.sleep_pcb_list = 0x0;
 }
 
-// methods
+/// @brief add a task to the ready queue
+/// @param pcb 
 void enqueue(PCB* pcb) {
+     assert(pcb->status == Ready);
     if (is_full()) {
         panic("PCB queue is full");
     }
@@ -29,6 +32,8 @@ void enqueue(PCB* pcb) {
     PCB_MANAGER.rear = (PCB_MANAGER.rear + 1) % TASK_SIZE;
 }
 
+/// @brief get a task(pcb) from the ready queue by FIFO
+/// @return pcb 
 PCB* dequeue() {
     if (is_empty()) {
         panic("dequeue should not reach here");
@@ -48,6 +53,10 @@ i32 is_full() {
     return (PCB_MANAGER.rear + 1) % TASK_SIZE == PCB_MANAGER.front;
 }
 
+/// @brief create a task and add it to the ready queue, the entry is the thread function
+///        the memory location of the pcb is the physical address => pcb, which should align to 4KB(One Page)
+/// @param entry 
+/// @param pcb 
 static void create_task(void (*entry)(), PCB* pcb) {
     u32 stack = (u32)pcb + (u32)PAGE_SIZE;
 
@@ -66,10 +75,14 @@ static void create_task(void (*entry)(), PCB* pcb) {
     enqueue(pcb);
 }
 
+/// @brief get the current task on cpu
+/// @return pcb(task)
 PCB* get_current_task() {
     return PCB_MANAGER.current;
 }
 
+/// @brief fetch a task from the ready queue, if it is empty, return the idle task
+/// @return pcb 
 PCB* fetch_task() {
     if (is_empty()) {
         return idle_pcb;
@@ -78,6 +91,7 @@ PCB* fetch_task() {
     return dequeue();
 }
 
+/// @brief run the first task
 static void run_first_task() {
     PCB* first_task = fetch_task();
     PCB_MANAGER.current = first_task;
@@ -88,6 +102,7 @@ static void run_first_task() {
     __switch(unused_ptr, first_task);
 }
 
+/// @brief schedule the tasks intensively
 void schedule() {
     if (PCB_MANAGER.current == NULL) {
         run_first_task();
@@ -96,6 +111,7 @@ void schedule() {
     PCB* next_task = fetch_task();
     PCB* current = PCB_MANAGER.current;
     if (current->status != Block) {
+        current->status = Ready;
         enqueue(PCB_MANAGER.current);
     }
     PCB_MANAGER.current = next_task;
@@ -103,33 +119,23 @@ void schedule() {
     __switch(current, next_task);
 }
 
-static void wakeup(PCB* pcb) {
+/// @brief wakeup a task => add it to the ready queue
+/// @param pcb 
+void wakeup(PCB* pcb) {
     assert(pcb->status == Block);
     pcb->status = Ready;
     enqueue(pcb);
 }
 
-static void block() {
-    PCB* current = PCB_MANAGER.current;
-    assert(current->status == Running);
-    current->status = Block;
-    PCB_MANAGER.wait_tasks[PCB_MANAGER.wait_rear] = current;
-    PCB_MANAGER.wait_rear = (PCB_MANAGER.wait_rear + 1) % TASK_SIZE;
-}
-
-static void block_wakeup() {
-    PCB* result = PCB_MANAGER.wait_tasks[PCB_MANAGER.wait_front];
-    PCB_MANAGER.wait_tasks[PCB_MANAGER.wait_front] = 0x0; // free the memory
-    PCB_MANAGER.wait_front = (PCB_MANAGER.wait_front + 1) % TASK_SIZE;
-
-    result->status = Ready;
-    enqueue(result);
-}
-
+/// @brief judge whether the sleep queue is empty
+/// @return bool refers to whether the sleep queue is empty
 static i8 sleep_queue_is_empty() {
     return PCB_MANAGER.sleep_pcb_list == 0x0;
 }
 
+/// @brief block the current task until the end_time_ms arrives
+/// @param pcb 
+/// @param end_time_ms 
 void sleep_enqueue(PCB* pcb, u32 end_time_ms) {
     assert(pcb->status == Running);
     pcb->status = Block;
@@ -177,9 +183,11 @@ void sleep_enqueue(PCB* pcb, u32 end_time_ms) {
     prep->next->next = 0x0;
 }
 
+/// @brief wake up all the tasks in the sleep queue whose end_time_ms is less than current_time_ms
+/// @param current_time_ms 
 void sleep_wakeup(u32 current_time_ms) {
     if (sleep_queue_is_empty()) {
-        debug("sleep queue is empty");
+        // debug("sleep queue is empty");
         return;
     }
 
@@ -194,44 +202,52 @@ void sleep_wakeup(u32 current_time_ms) {
     }
 }
 
+/// @brief idle task
 static void idle() {
     while(true) {
-        trace("Executing idle thread");
         asm volatile ("sti");
         asm volatile ("hlt");
         schedule();
     }
 }
 
+/// @brief initialize the task manager and idle task
 void task_init() {
     pcb_manager_init();
     create_task(idle, get_paddr_from_ppn(allocate_physical_page_for_kernel()));
     idle_pcb = fetch_task();
 }
 
+// test
 void thread_a() {
     asm volatile ("sti");
-    time_val tv;
-    get_time(&tv);
-    printf("A-> time val: {%d %d}\n", tv.sec, tv.usec);
-    syscall(SYSCALL_SLEEP, 500, 0, 0);
-    get_time(&tv);
-    printf("A-> after sleep time val: {%d %d}\n", tv.sec, tv.usec);
-    asm volatile ("cli");
-    while(true);
+    println("Entry A thread at time: %d", get_time_ms());
+    syscall(SYSCALL_MUTEX_LOCK, 0, 0, 0);
+    println("A get lock at time: %d", get_time_ms());
+    syscall(SYSCALL_SLEEP, 1000, 0, 0);
+    println("A sleep done at time: %d", get_time_ms());
+
+    println("A unlock at time: %d", get_time_ms());
+    syscall(SYSCALL_MUTEX_UNLOCK, 0, 0, 0);
+
+    println_with_color(LIGHT_PURPLE, "A thread exit");
+    suspend();
 }
 
 void thread_b() {
     asm volatile ("sti");
-    for (i32 i = 0; ; i++ ) {
-        time_val tv;
-        syscall(SYSCALL_GETTIME_MS, &tv, 0, 0);
-        printf("B-> time val: {%d %d}\n", tv.sec, tv.usec);
-        while(true);
-    }
+    println("Entry B thread at time: %d", get_time_ms());
+    println("B want to get lock at time: %d", get_time_ms());
+    syscall(SYSCALL_MUTEX_LOCK, 0, 0, 0);
+    println("B got lock at time: %d", get_time_ms());
+
+    println_with_color(LIGHT_PURPLE, "B thread exit");
+    suspend();
 }
+
+/// @brief test the task manager
 void task_test() {
     create_task(thread_a, get_paddr_from_ppn(allocate_physical_page_for_kernel()));
-    // create_task(thread_b, get_paddr_from_ppn(allocate_physical_page_for_kernel()));
+    create_task(thread_b, get_paddr_from_ppn(allocate_physical_page_for_kernel()));
     asm volatile ("sti");
 }

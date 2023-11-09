@@ -1,3 +1,6 @@
+#ifndef TASK_H
+#define TASK_H
+
 #include "type.h"
 
 #define TASK_SIZE 1024
@@ -22,7 +25,6 @@ typedef struct saved_register {
     u32 eip;
 } saved_register;
 
-
 typedef struct sleep_pcb {
     PCB* pcb;
     u32 sleep_end_time_ms;
@@ -35,11 +37,8 @@ typedef struct pcb_manager {
     u32 rear;
     PCB* tasks[TASK_SIZE];
 
-    PCB* wait_tasks[TASK_SIZE];
-    u32 wait_front;
-    u32 wait_rear;
-
-    sleep_pcb* sleep_pcb_list; // priority queue
+    /// @brief sleep queue, priority queue
+    sleep_pcb* sleep_pcb_list;
 } pcb_manager;
 
 void task_init();
@@ -48,4 +47,8 @@ void task_test();
 void sleep_enqueue(PCB* pcb, u32 end_time_ms);
 void sleep_wakeup(u32 current_time_ms);
 
+void wakeup(PCB* pcb);
+
 PCB* get_current_task();
+
+#endif

@@ -243,7 +243,6 @@ i32 vsprintf(char *buf, const char *fmt, va_list args)
                 precision = 0;
         }
 
-        // 下面这段代码分析长度修饰符，并将其存入 qualifer 变量
         qualifier = -1;
         if (*fmt == 'h' || *fmt == 'l' || *fmt == 'L')
         {
@@ -513,6 +512,8 @@ void error_info(const char *file, i32 line, const char *fmt, ...) {
 }
 // ------ log utils end
 
+
+// memory utils ------
 void memcpy(void* dst, const void* src, size_t n) {
     u8* d = (u8*)dst;
     const u8* s = (const u8*)src;
@@ -528,6 +529,7 @@ void memfree(void* start, size_t n) {
         *s++ = 0;
     }
 }
+// ------ memory utils end
 
 void suspend() {
     while(true);

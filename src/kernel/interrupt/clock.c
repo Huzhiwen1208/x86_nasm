@@ -64,6 +64,8 @@ u32 get_time_ms() {
     return jiffies * JIFFY + (CLOCK_COUNTER - read_counter0()) * (tick_s * 1000);
 }
 
+/// @brief clock interrupt handler entry
+/// @param vector 
 static void clock_handler(i32 vector) {
     jiffies ++;
     assert(vector == 0x20);
@@ -81,6 +83,7 @@ static void pit_init() {
     writeb(COUNTER0, CLOCK_COUNTER >> 8);
 }
 
+/// @brief  Initialize clock interrupt
 void clock_init() {
     pit_init();
     set_interrupt_handler(0x20, clock_handler);

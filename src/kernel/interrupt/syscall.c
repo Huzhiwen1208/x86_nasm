@@ -4,18 +4,27 @@
 #include "../include/log.h"
 #include "../include/task.h"
 #include "../include/time.h"
+#include "../include/mutex.h"
 
 extern pcb_manager PCB_MANAGER;
 
+/// @brief test syscall
+/// @param arg1 
+/// @param arg2 
+/// @param arg3 
+/// @return 
 static u32 syscall_test(u32 arg1, u32 arg2, u32 arg3) {
     printf("syscall_test: arg: {%d, %d, %d}\n", arg1, arg2, arg3);
     return 0;
 }
 
+/// @brief trigger a task switch intensively
 static void syscall_yield() {
     schedule();
 }
 
+/// @brief sleep specific ms until wakeup in clock interrupt
+/// @param ms 
 static void syscall_sleep(u32 ms) {
     PCB* current = get_current_task();
 
@@ -23,6 +32,12 @@ static void syscall_sleep(u32 ms) {
     schedule();
 }
 
+/// @brief syscall general entry
+/// @param syscall_num 
+/// @param arg1 
+/// @param arg2 
+/// @param arg3 
+/// @return 
 u32 trap_handler(u32 syscall_num, u32 arg1, u32 arg2, u32 arg3) {
     switch (syscall_num) {
     case SYSCALL_TEST:
@@ -36,13 +51,24 @@ u32 trap_handler(u32 syscall_num, u32 arg1, u32 arg2, u32 arg3) {
     case SYSCALL_GETTIME_MS:
         get_time((time_val*)arg1);
         break;
+    case SYSCALL_MUTEX_LOCK:
+        mutex_lock();
+        break;
+    case SYSCALL_MUTEX_UNLOCK:
+        mutex_unlock();
+        break;
     default:
         panic("Unknown syscall number: %d", syscall_num);
     }
     return 0;
 }
 
-
+/// @brief trigger a syscall
+/// @param syscall_num 
+/// @param arg1 
+/// @param arg2 
+/// @param arg3 
+/// @return 
 u32 syscall(u32 syscall_num, u32 arg1, u32 arg2, u32 arg3) {
     u32 result;
     asm volatile ("movl %0, %%eax" : : "m"(syscall_num));

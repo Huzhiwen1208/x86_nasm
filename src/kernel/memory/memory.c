@@ -3,10 +3,17 @@
 #include "../include/type.h"
 #include "../include/utils.h"
 
+/// @brief  the physical frame allocator
 frame_allocator FRAME_ALLOCATOR;
+/// @brief  the kernel root ppn
 u32 KERNEL_ROOT_PPN;
 
-// vaddr 
+// vaddr: [10][10][12] 
+//      => [first page index][second page index][physical page offset]
+
+/// @brief get the first page index of a virtual address
+/// @param vaddr 
+/// @return the first page index
 u32 get_first_page_index(u32 vaddr) {
     return vaddr >> 22 & 0x3ff;
 }
@@ -19,10 +26,15 @@ u32 get_physical_page_offset(u32 vaddr) {
     return vaddr & 0xfff;
 }
 
+/// @brief get root page table paddr, which is the root ppn << 12
+/// @return root page table paddr
 page_table_entry* get_root_page_table() {
     return (page_table_entry*)(get_root_ppn() << 12);
 }
 
+/// @brief get second page table paddr by vaddr
+/// @param vaddr 
+/// @return second page table start paddr
 page_table_entry* get_second_page_table(u32 vaddr) {
     page_table_entry* root_page_table = get_root_page_table();
     u32 first_page_index = get_first_page_index(vaddr);
@@ -31,6 +43,9 @@ page_table_entry* get_second_page_table(u32 vaddr) {
     return (page_table_entry*)(pte->index << 12);
 }
 
+/// @brief get ppn of vaadr
+/// @param vaddr 
+/// @return ppn
 u32 get_physical_page_number(u32 vaddr) {
     page_table_entry* second_page_table = get_second_page_table(vaddr);
     u32 second_page_index = get_second_page_index(vaddr);
@@ -39,6 +54,9 @@ u32 get_physical_page_number(u32 vaddr) {
     return pte->index;
 }
 
+/// @brief get paddr of vaddr
+/// @param vaddr 
+/// @return paddr
 u32 get_physical_address(u32 vaddr) {
     u32 ppn = get_physical_page_number(vaddr);
     u32 offset = get_physical_page_offset(vaddr);
@@ -46,13 +64,23 @@ u32 get_physical_address(u32 vaddr) {
     return (ppn << 12) + offset;
 }
 
-// ppn
+/// @brief get paddr by ppn
+/// @param ppn 
+/// @return paddr
 u32 get_paddr_from_ppn(u32 ppn) {
     return ppn << 12;
 }
 
+u32 get_ppn_from_paddr_floor(u32 paddr) {
+    return paddr >> 12;
+}
 
-// frame allocator method
+u32 get_ppn_from_paddr_ceil(u32 paddr) {
+    return paddr >> 12;
+}
+
+/// @brief initialize physical frame allocator
+///         the previous 4M(1024 frams) is for kernel
 static void frame_allocator_empty_init() {
     FRAME_ALLOCATOR.total_pages = 0;
     FRAME_ALLOCATOR.free_pages = 0;
@@ -86,6 +114,8 @@ static void set_in_using(u32 ppn) {
     }
 }
 
+/// @brief free a physical page by ppn, but not clear the content
+/// @param ppn 
 void free_physical_page(u32 ppn) {
     set_not_in_using(ppn);
     FRAME_ALLOCATOR.free_pages++;
@@ -94,6 +124,8 @@ void free_physical_page(u32 ppn) {
     }
 }
 
+/// @brief allocate a physical page from 4M - 32M, for user
+/// @return ppn
 u32 allocate_physical_page() {
     if (FRAME_ALLOCATOR.free_pages == 0) {
         panic("No free physical page!");
@@ -108,6 +140,8 @@ u32 allocate_physical_page() {
     }
 }
 
+/// @brief allocate a physical page from 1M - 4M, for kernel
+/// @return ppn
 u32 allocate_physical_page_for_kernel() {
     if (FRAME_ALLOCATOR.free_pages == 0) {
         panic("No free physical page!");
@@ -134,12 +168,12 @@ static void show_physical_pages() {
     printf("---------------show physical page end---------------\n");
 }
 
-
-// memory page method
 u32 get_root_ppn() {
     return KERNEL_ROOT_PPN;
 }
 
+/// @brief set root ppn to cr3
+/// @param pde 
 void set_cr3(u32 pde) {
     // pde is root ppn
     assert(pde % PAGE_SIZE == 0);
@@ -152,6 +186,9 @@ static void enable_page() {
     asm volatile ("movl %eax, %cr0");
 }
 
+/// @brief default initialize a page table entry
+/// @param pte 
+/// @param index 
 static void pte_init(page_table_entry* pte, u32 index) {
     memfree((void*)pte, sizeof(page_table_entry));
 
@@ -162,7 +199,7 @@ static void pte_init(page_table_entry* pte, u32 index) {
     pte->index = index;
 }
 
-// init memory mapping
+/// @brief initialize page mapping to MMU and enable page
 void mapping_init() {
     KERNEL_ROOT_PPN = allocate_physical_page_for_kernel();
     page_table_entry* root_ppn = (page_table_entry*)(KERNEL_ROOT_PPN << 12);
@@ -186,6 +223,9 @@ void mapping_init() {
     enable_page();
 }
 
+/// @brief get free pages and total pages from ards, 
+///         we cant use page now because we haven't enable page
+/// @param ards_cnt_address 
 void memory_init(void* ards_cnt_address) {
     frame_allocator_empty_init();
     i32 ards_cnt = *((i32*)ards_cnt_address);

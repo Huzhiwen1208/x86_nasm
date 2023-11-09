@@ -1,3 +1,6 @@
+#ifndef __TYPE_H__
+#define __TYPE_H__
+
 #define EOF -1
 #define NULL 0
 
@@ -35,3 +38,5 @@ typedef unsigned int size_t;
 #define LIGHT_PURPLE 13
 #define LIGHT_YELLOW 14
 #define BRIGHT_WHITE 15
+
+#endif

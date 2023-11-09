@@ -10,6 +10,7 @@ extern void mapping_init();
 extern void task_init();
 extern void task_test();
 extern void mutex_init();
+extern void spin_lock_init();
 
 void kernel_main() {
     console_init();
@@ -27,6 +28,7 @@ void kernel_main() {
     info("Memory page initialized successfully!");
 
     mutex_init();
+    spin_lock_init();
 
     task_init();
     task_test();

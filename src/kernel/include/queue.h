@@ -30,4 +30,7 @@ void init_wait_queue( wait_queue* wq,
     PCB* (*fetch_wait_queue)(struct wait_queue*)
 );
 
+void default_add_wait_queue(wait_queue* wq, PCB* pcb);
+PCB* default_fetch_wait_queue(wait_queue* wq);
+
 #endif

@@ -222,50 +222,16 @@ void task_init() {
 void thread_a() {
     println("Entry A thread at time: %d", get_time_ms());
     asm volatile ("sti");
-    syscall(SYSCALL_SPIN_LOCK, 0, 0, 0);
-    println("A got spin-lock at time: %d", get_time_ms());
-    syscall(SYSCALL_SPIN_LOCK, 0, 0, 0);
-    println("A second got spin-lock at time: %d", get_time_ms());
-    syscall(SYSCALL_SPIN_LOCK, 0, 0, 0);
-    println("A third got spin-lock at time: %d", get_time_ms());
-    syscall(SYSCALL_SPIN_LOCK, 0, 0, 0);
-    println("A fourth got spin-lock at time: %d", get_time_ms());
-    syscall(SYSCALL_SLEEP, 1000, 0, 0);
+    syscall(SYSCALL_SLEEP, 10000, 0, 0);
     println("A sleep done at time: %d", get_time_ms());
-
-    println("A start to spin-unlock at time: %d", get_time_ms());
-    syscall(SYSCALL_SPIN_UNLOCK, 0, 0, 0);
-    syscall(SYSCALL_SPIN_UNLOCK, 0, 0, 0);
-    syscall(SYSCALL_SPIN_UNLOCK, 0, 0, 0);
-    syscall(SYSCALL_SPIN_UNLOCK, 0, 0, 0);
-    println("A end to spin-unlock at time: %d", get_time_ms());
-
-    println_with_color(LIGHT_PURPLE, "A thread exit");
     suspend();
 }
 
 void thread_b() {
     println("Entry B thread at time: %d", get_time_ms());
     asm volatile ("sti");
-    syscall(SYSCALL_SPIN_LOCK, 0, 0, 0);
-    println("B got spin-lock at time: %d", get_time_ms());
-    syscall(SYSCALL_SPIN_LOCK, 0, 0, 0);
-    println("B second got spin-lock at time: %d", get_time_ms());
-    syscall(SYSCALL_SPIN_LOCK, 0, 0, 0);
-    println("B third got spin-lock at time: %d", get_time_ms());
-    syscall(SYSCALL_SPIN_LOCK, 0, 0, 0);
-    println("B fourth got spin-lock at time: %d", get_time_ms());
-    syscall(SYSCALL_SLEEP, 1000, 0, 0);
+    syscall(SYSCALL_SLEEP, 10000, 0, 0);
     println("B sleep done at time: %d", get_time_ms());
-
-    println("B start to spin-unlock at time: %d", get_time_ms());
-    syscall(SYSCALL_SPIN_UNLOCK, 0, 0, 0);
-    syscall(SYSCALL_SPIN_UNLOCK, 0, 0, 0);
-    syscall(SYSCALL_SPIN_UNLOCK, 0, 0, 0);
-    syscall(SYSCALL_SPIN_UNLOCK, 0, 0, 0);
-    println("B end to spin-unlock at time: %d", get_time_ms());
-
-    println_with_color(LIGHT_PURPLE, "B thread exit");
     suspend();
 }
 

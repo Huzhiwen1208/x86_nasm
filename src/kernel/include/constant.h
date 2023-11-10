@@ -18,4 +18,8 @@
 // TASK
 #define TASK_SIZE 1024
 
+// KEYBOARD
+#define KEYBOARD_DATA_PORT 0x60
+#define KEYBOARD_CTRL_PORT 0x64
+
 #endif // __CONSTANT_H__

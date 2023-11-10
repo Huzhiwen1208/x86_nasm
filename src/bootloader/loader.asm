@@ -112,7 +112,7 @@ entry_protect_mode:
     mov bl, 200; read 200 sectors
     call read_disk
     push ards_cnt
-    jmp dword code_segment_selector:0x7e00 ; jump to kernel
+    jmp dword code_segment_selector:0x7e40 ; jump to kernel
     ud2
 
 read_disk:

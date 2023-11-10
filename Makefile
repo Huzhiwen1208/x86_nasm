@@ -16,7 +16,8 @@ KernelSourceFile=$(wildcard $(KernelPath)/*.c) $(wildcard $(KernelPath)/*.asm)
 KernelSourceFile+=$(wildcard $(KernelPath)/*/*.c) $(wildcard $(KernelPath)/*/*.asm)
 KernelOBJ=$(patsubst $(KernelPath)/%.asm, $(TARGET)/kernel/%.o, $(filter %.asm, $(KernelSourceFile)))
 KernelOBJ+=$(patsubst $(KernelPath)/%.c, $(TARGET)/kernel/%.o, $(filter %.c, $(KernelSourceFile)))
-ENTRYPOINT=0x7e00
+MULTIBOOT2=0x7e00
+ENTRYPOINT=0x7e40
 
 SourceCFile=$(KernelPath)/main.c
 PreCompiledFile=test/pre_compile.c
@@ -76,7 +77,7 @@ $(TARGET)/bootloader/%.bin: $(BootLoader)/%.asm
 # kernel made ----- 
 # replace ld, objcopy in linux:binutils with ld.lld, llvm-objcopy in macos:llvm
 $(ELFKernel): $(KernelOBJ)
-	ld.lld -m elf_i386 -static -Ttext $(ENTRYPOINT) $^ -o $@
+	ld.lld -m elf_i386 -static --section-start=.multiboot2_header=$(MULTIBOOT2) -Ttext $(ENTRYPOINT) $^ -o $@
 $(NakedKernel): $(ELFKernel)
 	llvm-objcopy -O binary $< $@
 # ------ kernel made
@@ -102,6 +103,14 @@ debug: build
 
 vmdk: $(IMG)
 	qemu-img convert -pO vmdk $< ~/Desktop/v.vmdk
+
+iso: build grub/grub.cfg $(ELFKernel)
+	# grub-file --is-x86-multiboot2 $(ELFKernel)
+	mkdir -p $(TARGET)/iso/boot/grub
+	cp grub/grub.cfg $(TARGET)/iso/boot/grub
+	cp $(ELFKernel) $(TARGET)/iso/boot
+
+	grub-mkrescue -o iso/inf_os.iso $(TARGET)
 
 .PHONY: clean
 clean:

@@ -15,6 +15,9 @@ void assertion_failure(char *exp, char *file, char *base, i32 line);
 size_t length(const char* str);
 void concat(char* s1, char* s2);
 i32 is_digit(char c);
+i32 is_alpha(char c);
+i32 is_upper(char c);
+i32 is_lower(char c);
 
 void memcpy(void* dst, const void* src, size_t n);
 void memfree(void* start, size_t n);

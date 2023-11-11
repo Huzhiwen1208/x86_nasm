@@ -1,10 +1,10 @@
-#include "../include/syscall.h"
-#include "../include/stdio.h"
-#include "../include/type.h"
-#include "../include/log.h"
-#include "../include/task.h"
-#include "../include/time.h"
-#include "../include/mutex.h"
+#include "../../include/syscall.h"
+#include "../../include/stdio.h"
+#include "../../include/type.h"
+#include "../../include/log.h"
+#include "../../include/task.h"
+#include "../../include/time.h"
+#include "../../include/mutex.h"
 
 extern pcb_manager PCB_MANAGER;
 

@@ -1,11 +1,11 @@
-#include "../include/io.h"
-#include "../include/interrupt.h"
-#include "../include/io.h"
-#include "../include/log.h"
-#include "../include/task.h"
-#include "../include/stdio.h"
-#include "../include/time.h"
-#include "../include/utils.h"
+#include "../../include/io.h"
+#include "../../include/interrupt.h"
+#include "../../include/io.h"
+#include "../../include/log.h"
+#include "../../include/task.h"
+#include "../../include/stdio.h"
+#include "../../include/time.h"
+#include "../../include/utils.h"
 
 #define COUNTER0 0x40 // PIT counter 0 port, used for system timer clock
 #define COUNTER1 0x41 // PIT counter 1 port, used for DRAM refresh

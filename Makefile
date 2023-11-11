@@ -14,6 +14,7 @@ ELFKernel=$(TARGET)/kernel/os.elf
 NakedKernel=$(TARGET)/kernel/os.bin
 KernelSourceFile=$(wildcard $(KernelPath)/*.c) $(wildcard $(KernelPath)/*.asm)
 KernelSourceFile+=$(wildcard $(KernelPath)/*/*.c) $(wildcard $(KernelPath)/*/*.asm)
+KernelSourceFile+=$(wildcard $(KernelPath)/*/*/*.c) $(wildcard $(KernelPath)/*/*/*.asm)
 KernelOBJ=$(patsubst $(KernelPath)/%.asm, $(TARGET)/kernel/%.o, $(filter %.asm, $(KernelSourceFile)))
 KernelOBJ+=$(patsubst $(KernelPath)/%.c, $(TARGET)/kernel/%.o, $(filter %.c, $(KernelSourceFile)))
 ENTRYPOINT=0x7e00
@@ -24,7 +25,7 @@ CompiledFile=test/assembly.s
 OBJFile=test/obj.o
 EXEFile=test/exe.elf
 
-qemu_run: build
+run: build
 	qemu-system-i386 -m 32M -boot c -hda image/master.img
 
 bochs_run: build
@@ -39,7 +40,8 @@ ifeq ($(wildcard $(TARGET)),)
 	@mkdir -p $(TARGET)/kernel
 	@mkdir -p $(TARGET)/kernel/utils
 	@mkdir -p $(TARGET)/kernel/console
-	@mkdir -p $(TARGET)/kernel/interrupt
+	@mkdir -p $(TARGET)/kernel/interrupt/trap
+	@mkdir -p $(TARGET)/kernel/interrupt/clock
 	@mkdir -p $(TARGET)/kernel/task
 	@mkdir -p $(TARGET)/kernel/memory
 	@mkdir -p $(TARGET)/kernel/mutex

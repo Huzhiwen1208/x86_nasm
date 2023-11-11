@@ -293,12 +293,12 @@ void keyboard_handler(int vector) {
     if (ch == INV)
         return;
     
-    if (ch == 'c' && ctrl_state) {
-        println("ctrl + c: ^c");
+    if (ctrl_state && is_lower(ch)) {
+        println("received: ^%c", ch);
         return;
-    }  else {
-        println("received: %c", ch);
     }
+    
+    println("received: %c", ch);
 }
 
 void keyboard_init()

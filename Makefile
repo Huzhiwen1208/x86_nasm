@@ -24,9 +24,11 @@ CompiledFile=test/assembly.s
 OBJFile=test/obj.o
 EXEFile=test/exe.elf
 
-run: build
-	# bochs -q -f bochs/bochsrc -unlock
+qemu_run: build
 	qemu-system-i386 -m 32M -boot c -hda image/master.img
+
+bochs_run: build
+	bochs -q -f bochs/bochsrc -unlock
 
 build: $(TARGET) $(IMG)
 
@@ -41,6 +43,7 @@ ifeq ($(wildcard $(TARGET)),)
 	@mkdir -p $(TARGET)/kernel/task
 	@mkdir -p $(TARGET)/kernel/memory
 	@mkdir -p $(TARGET)/kernel/mutex
+	@mkdir -p $(TARGET)/kernel/descriptor
 endif
 
 # test -----

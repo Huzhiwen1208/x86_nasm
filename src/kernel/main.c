@@ -3,7 +3,7 @@
 #include "include/time.h"
 
 extern void console_init();
-extern void gdt_init();
+extern void gdt_tss_init();
 extern void interrupt_init();
 extern void clock_init();
 extern void mapping_init();
@@ -15,9 +15,9 @@ void keyboard_init();
 
 void kernel_main() {
     console_init();
-    info("GDT initializing...");
-    gdt_init();
-    info("GDT initialized successfully!");
+    info("GDT & TSS initializing...");
+    gdt_tss_init();
+    info("GDT & TSS initialized successfully!");
     info("IDT & PIC initializing...");
     interrupt_init();
     info("IDT & PIC initialized successfully!");

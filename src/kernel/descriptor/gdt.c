@@ -1,5 +1,5 @@
-#include "include/descriptor.h"
-#include "include/utils.h"
+#include "../include/descriptor.h"
+#include "../include/utils.h"
 
 /// @brief the global gdt
 struct global_descriptor gdt[GDT_SIZE];
@@ -20,4 +20,13 @@ void gdt_init() {
 
     // load kernel gdt_ptr to system
     asm volatile("lgdt %0" : : "m" (gdt_ptr));
+}
+
+void gdt_tss_init() {
+    gdt_init();
+    tss_init();
+}
+
+global_descriptor* get_from_gdt(u16 index) {
+    return &gdt[index];
 }

@@ -9,6 +9,11 @@
 
 // GDT
 #define GDT_SIZE 8192
+#define KERNEL_CODE_SELECTOR (1 << 3)
+#define KERNEL_DATA_SELECTOR (2 << 3)
+#define KERNEL_TSS_SELECTOR (3 << 3)
+#define USER_CODE_SELECTOR (4 << 3 | 0b11)  // DPL = 3
+#define USER_DATA_SELECTOR (5 << 3 | 0b11)  // DPL = 3
 
 // IDT
 #define IDT_SIZE 256

@@ -21,8 +21,9 @@ typedef struct global_descriptor {
     u8 base_high;
 } _no_align;
 
-void gdt_init();
+typedef struct global_descriptor global_descriptor;
 
+global_descriptor* get_from_gdt(u16 index);
 
 typedef struct interrupt_descriptor {
     u16 offset_low; // 0 - 15 low bit, offset in segment
@@ -36,3 +37,41 @@ typedef struct interrupt_descriptor {
 } _no_align;
 
 void idt_init();
+
+typedef struct tss {
+    u32 backlink; // segment selector of former task
+    u32 esp0;     // stack pointer of ring0
+    u32 ss0;      // stack segment selector of ring0
+    u32 esp1;
+    u32 ss1; 
+    u32 esp2;
+    u32 ss2; 
+    u32 cr3;
+    u32 eip;
+    u32 flags;
+    u32 eax;
+    u32 ecx;
+    u32 edx;
+    u32 ebx;
+    u32 esp;
+    u32 ebp;
+    u32 esi;
+    u32 edi;
+    u32 es;
+    u32 cs;
+    u32 ss;
+    u32 ds;
+    u32 fs;
+    u32 gs;
+    u32 ldtr;          // local descriptor table segment selector
+    u16 trace : 1;     // if 1, will cause an interrupt when a task switch occurs
+    u16 reversed : 15; // unused
+    u16 iobase;
+    u32 ssp;
+} _no_align;
+typedef struct tss tss;
+
+void tss_init();
+
+
+void gdt_tss_init();

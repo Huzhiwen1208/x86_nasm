@@ -3,6 +3,7 @@
 extern trap_handler
 section .text
 global __all_traps
+global __restore
 __all_traps:
     ; entry trap handler by "int 0x80"
     push ds

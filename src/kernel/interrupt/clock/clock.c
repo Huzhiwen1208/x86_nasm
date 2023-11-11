@@ -89,6 +89,6 @@ void clock_init() {
     pit_init();
     set_interrupt_handler(0x20, clock_handler);
     set_interrupt_mask(0x20);   
-    asm volatile ("cli");
+    asm volatile ("sti");
     jiffies = 0;
 }

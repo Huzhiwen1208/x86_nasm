@@ -31,7 +31,6 @@ void kernel_main() {
     mutex_init();
     spin_lock_init();
     keyboard_init();
-
     task_init();
     task_test();
 }

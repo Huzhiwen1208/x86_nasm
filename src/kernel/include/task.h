@@ -4,16 +4,42 @@
 #include "type.h"
 #include "constant.h"
 
-enum PCB_STATUS {
+typedef enum PCB_STATUS {
     Running,
     Block,
     Ready
-};
+} PCB_STATUS;
+
+typedef enum PCB_MODE {
+    Kernel,
+    User
+} PCB_MODE;
+
+typedef struct trap_context {
+    u32 edi;
+    u32 esi;
+    u32 ebp;
+    u32 esp;
+    u32 ebx;
+    u32 edx;
+    u32 ecx;
+    u32 eax;
+
+    u32 gs;
+    u32 fs;
+    u32 es;
+    u32 ds;
+    u32 eip;
+    u32 cs;
+    u32 eflags;
+    u32 esp3; // will not execute to user mode if without esp3 and ss3.
+    u32 ss3;
+} trap_context;
 
 typedef struct PCB {
-    u32* stack;
-    enum PCB_STATUS status;
-    u64 sleep_start_jeffy;
+    u32 *stack;
+    PCB_STATUS status;
+    PCB_MODE mode;
 } PCB;
 
 typedef struct saved_register {

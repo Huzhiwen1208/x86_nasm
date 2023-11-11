@@ -71,6 +71,7 @@ static void create_task(void (*entry)(), PCB* pcb) {
 
     pcb->stack = stack;
     pcb->status = Ready;
+    pcb->mode = Kernel;
 
     enqueue(pcb);
 }
@@ -218,26 +219,63 @@ void task_init() {
     idle_pcb = fetch_task();
 }
 
+
+extern void __restore;
+void go_to_user_mode(void* user_entry) {
+    u32* kernel_stack = (u32*)((u32)get_paddr_from_ppn(
+        allocate_physical_page_for_kernel()
+    ) + (u32)PAGE_SIZE);
+
+    u32* user_stack = (u32*)((u32)get_paddr_from_ppn(
+        allocate_physical_page_for_kernel()
+    ) + (u32)PAGE_SIZE);
+
+    trap_context* ctx = (trap_context*)((u32)kernel_stack - sizeof(trap_context));
+    ctx->edi=1;
+    ctx->esi=2;
+    ctx->ebp=3;
+    ctx->esp=0;
+    ctx->ebx=4;
+    ctx->edx=5;
+    ctx->ecx=6;
+    ctx->eax=7;
+    ctx->gs=0;
+    ctx->fs=USER_DATA_SELECTOR;
+    ctx->es=USER_DATA_SELECTOR;
+    ctx->ds=USER_DATA_SELECTOR;
+    ctx->eip=user_entry;
+    ctx->cs=USER_CODE_SELECTOR;
+    ctx->eflags=(0 << 12 | 0b10 | 1 << 9);
+    ctx->esp3=(u32)user_stack;
+    ctx->ss3=USER_DATA_SELECTOR;
+
+    asm volatile ("movl %0, %%esp" : : "m"(ctx));
+    asm volatile ("jmp __restore");
+}
+
 // test
+void user_thread() {
+    u32 c = 3;
+    while(true) {
+        c += 1;
+    }
+}
+
 void thread_a() {
-    println("Entry A thread at time: %d", get_time_ms());
     asm volatile ("sti");
-    syscall(SYSCALL_SLEEP, 10000, 0, 0);
-    println("A sleep done at time: %d", get_time_ms());
+    println("Entry A thread at time: %d", get_time_ms());
+    go_to_user_mode(user_thread);
     suspend();
 }
 
 void thread_b() {
-    println("Entry B thread at time: %d", get_time_ms());
     asm volatile ("sti");
-    syscall(SYSCALL_SLEEP, 10000, 0, 0);
-    println("B sleep done at time: %d", get_time_ms());
+    println("Entry B thread at time: %d", get_time_ms());
     suspend();
 }
 
 /// @brief test the task manager
 void task_test() {
     create_task(thread_a, get_paddr_from_ppn(allocate_physical_page_for_kernel()));
-    create_task(thread_b, get_paddr_from_ppn(allocate_physical_page_for_kernel()));
-    asm volatile ("sti");
+    // create_task(thread_b, get_paddr_from_ppn(allocate_physical_page_for_kernel()));
 }

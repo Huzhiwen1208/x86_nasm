@@ -38,7 +38,7 @@ void tss_init() {
     user_code->long_mode = 0;   // 32 bits
     user_code->present = 1;     // present in memory
     user_code->privilege = 3;         // DPL = 3
-    user_code->type = 0b1010;   // type= 1CRA(1110)
+    user_code->type = 0b1110;   // type= 1CRA(1110)
 
     global_descriptor* user_data = get_from_gdt(USER_DATA_SELECTOR >> 3);
     user_data->base_low = 0;
@@ -51,5 +51,5 @@ void tss_init() {
     user_data->long_mode = 0;   // 32 bits
     user_data->present = 1;     // present in memory
     user_data->privilege = 3;         // DPL = 3
-    user_data->type = 0b0010;   // 0DWA(1010)
+    user_data->type = 0b0010;   // 0DWA(0010)
 }

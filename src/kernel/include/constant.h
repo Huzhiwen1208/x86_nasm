@@ -27,4 +27,9 @@
 #define KEYBOARD_DATA_PORT 0x60
 #define KEYBOARD_CTRL_PORT 0x64
 
+// Stdio
+#define STDIN 0
+#define STDOUT 1
+#define STDERR 2
+
 #endif // __CONSTANT_H__

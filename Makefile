@@ -46,6 +46,8 @@ ifeq ($(wildcard $(TARGET)),)
 	@mkdir -p $(TARGET)/kernel/memory
 	@mkdir -p $(TARGET)/kernel/mutex
 	@mkdir -p $(TARGET)/kernel/descriptor
+	@mkdir -p $(TARGET)/kernel/fs
+	@mkdir -p $(TARGET)/kernel/user_lib
 endif
 
 # test -----

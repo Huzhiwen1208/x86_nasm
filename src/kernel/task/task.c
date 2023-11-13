@@ -6,6 +6,7 @@
 #include "../include/time.h"
 #include "../include/memory.h"
 #include "../include/utils.h"
+#include "../user_lib/stdio.h"
 
 /// @brief the global task manager
 pcb_manager PCB_MANAGER;
@@ -255,8 +256,8 @@ void go_to_user_mode(void* user_entry) {
 
 // test
 void user_thread() {
-    syscall(SYSCALL_SLEEP, 10000, 0, 0);
-    printf("user thread\n");
+    syscall(SYSCALL_SLEEP, 3000, 0, 0);
+    print("user thread\n");
     // asm volatile ("sti");
     suspend();
 }

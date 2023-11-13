@@ -5,6 +5,7 @@
 #include "../../include/task.h"
 #include "../../include/time.h"
 #include "../../include/mutex.h"
+#include "../../include/fs.h"
 
 extern pcb_manager PCB_MANAGER;
 
@@ -62,6 +63,9 @@ u32 trap_handler(u32 syscall_num, u32 arg1, u32 arg2, u32 arg3) {
         break;
     case SYSCALL_SPIN_UNLOCK:
         spin_lock_unlock();
+        break;
+    case SYSCALL_WRITE:
+        write(arg1, (char*)arg2, arg3);
         break;
     default:
         panic("Unknown syscall number: %d", syscall_num);

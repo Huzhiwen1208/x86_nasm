@@ -50,7 +50,7 @@ static void set_cursor(struct corsor* c);
 // clear screen
 static void console_clear();
 // write string to console
-void console_write(const char* buffer, u32 len);
+i32 console_write(const char* buffer, u32 len);
 
 void console_init() {
     console_clear();
@@ -189,7 +189,9 @@ void console_write_with_color(const char* buffer, u32 len, u8 color) {
     set_cursor(c);
 }
 
-void console_write(const char* buffer, u32 len) {
+i32 console_write(const char* buffer, u32 len) {
+    i32 result = 0;
+
     struct corsor* c = get_current_cursor();
     u32 row = c->row;
     u32 col = c->col;
@@ -258,9 +260,11 @@ void console_write(const char* buffer, u32 len) {
 
         ptr = (u16*) (get_video_memory_base() + row * ROW_SIZE + col*2);
         restore_interrupt_status(status);
+        result++;
     }
 
     c->row = row;
     c->col = col;
     set_cursor(c);
+    return result;
 }

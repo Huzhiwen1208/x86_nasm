@@ -8,5 +8,6 @@
 #define SYSCALL_MUTEX_UNLOCK 5
 #define SYSCALL_SPIN_LOCK 6
 #define SYSCALL_SPIN_UNLOCK 7
+#define SYSCALL_WRITE 8
 
 u32 syscall(u32 syscall_num, u32 arg1, u32 arg2, u32 arg3);

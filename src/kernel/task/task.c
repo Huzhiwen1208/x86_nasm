@@ -231,14 +231,14 @@ void go_to_user_mode(void* user_entry) {
     ) + (u32)PAGE_SIZE);
 
     trap_context* ctx = (trap_context*)((u32)kernel_stack - sizeof(trap_context));
-    ctx->edi=1;
-    ctx->esi=2;
-    ctx->ebp=3;
+    ctx->edi=0;
+    ctx->esi=0;
+    ctx->ebp=0;
     ctx->esp=0;
-    ctx->ebx=4;
-    ctx->edx=5;
-    ctx->ecx=6;
-    ctx->eax=7;
+    ctx->ebx=0;
+    ctx->edx=0;
+    ctx->ecx=0;
+    ctx->eax=0;
     ctx->gs=0;
     ctx->fs=USER_DATA_SELECTOR;
     ctx->es=USER_DATA_SELECTOR;
@@ -255,10 +255,10 @@ void go_to_user_mode(void* user_entry) {
 
 // test
 void user_thread() {
-    u32 c = 3;
-    while(true) {
-        c += 1;
-    }
+    syscall(SYSCALL_SLEEP, 10000, 0, 0);
+    printf("user thread\n");
+    // asm volatile ("sti");
+    suspend();
 }
 
 void thread_a() {

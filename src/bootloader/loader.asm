@@ -253,7 +253,7 @@ code_segment:
     dw 0xffff
     dw 0
     db 0
-    db 0b1001_1110; type= 1CRA(1110), segment=1, DPL=00, present=1
+    db 0b1001_1010; type= 1CRA(1110), segment=1, DPL=00, present=1
     db 0xdf       ; granularity=1, big=1, long_mode=0, available=1, limit_high=1111
     db 0
 data_segment:

@@ -9,11 +9,12 @@ void tss_init() {
     // construct tss_entry
     memfree((void *) &tss_entry, sizeof(tss));  // clear
     tss_entry.ss0 = KERNEL_DATA_SELECTOR;
-    tss_entry.esp0 = 0x0;
+    tss_entry.iobase = sizeof(tss);
+    tss_entry.esp0 = 0x107000;
 
     global_descriptor* descriptor = get_from_gdt(KERNEL_TSS_SELECTOR >> 3);
-    descriptor->base_low = (u32) &tss_entry & 0xffff;
-    descriptor->base_high = ((u32) &tss_entry >> 24 ) & 0xff;
+    descriptor->base_low = ((u32)&tss_entry) & 0xffffff; // 24 bits!!!! 0xffff -> 0xffffff, fix error
+    descriptor->base_high = (((u32)&tss_entry) >> 24 ) & 0xff;
     descriptor->limit_low = (sizeof(tss) - 1 ) & 0xffff;
     descriptor->limit_high = ((sizeof(tss) - 1 ) >> 16 ) & 0xf;
     descriptor->segment = 0;  // system segment
@@ -23,8 +24,7 @@ void tss_init() {
     descriptor->present = 1;     // present in memory
     descriptor->privilege = 0;         // DPL = 0
     descriptor->type = 0b1001;   // 0b1001: TSS(Avaliable 32-bit TSS)
-
-    asm volatile("ltr %%ax" : : "a" (KERNEL_TSS_SELECTOR)); // load tss
+    asm volatile("ltr %%ax\n" : : "a" (KERNEL_TSS_SELECTOR)); // load tss
 
     // construct user code and user data
     global_descriptor* user_code = get_from_gdt(USER_CODE_SELECTOR >> 3);
@@ -38,7 +38,7 @@ void tss_init() {
     user_code->long_mode = 0;   // 32 bits
     user_code->present = 1;     // present in memory
     user_code->privilege = 3;         // DPL = 3
-    user_code->type = 0b1110;   // type= 1CRA(1110)
+    user_code->type = 0b1010;   // type= 1CRA(1010)
 
     global_descriptor* user_data = get_from_gdt(USER_DATA_SELECTOR >> 3);
     user_data->base_low = 0;

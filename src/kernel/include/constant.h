@@ -32,4 +32,7 @@
 #define STDOUT 1
 #define STDERR 2
 
+// Heap_Block
+#define MAX_FREE_BLOCK 256
+
 #endif // __CONSTANT_H__

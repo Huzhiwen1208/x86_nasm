@@ -45,21 +45,20 @@ typedef struct frame_allocator {
     u32 kernel_free_pages;
 } frame_allocator;
 
-
 i32 is_belong_kernel(u32 ppn);
 i32 is_in_using(u32 ppn);
-
 void free_physical_page(u32 ppn);
 u32 allocate_physical_page(); // return ppn
-void memory_init(void* ards_cnt_address);
-void mapping_init();
-
-
 page_table_entry* get_root_page_table();
 page_table_entry* get_second_page_table(u32 vaddr);
-
 u32 get_paddr_from_ppn(u32 ppn);
 u32 get_ppn_from_paddr_floor(u32 paddr);
 u32 get_ppn_from_paddr_ceil(u32 paddr);
+
+void memory_init(void* ards_cnt_address);
+void mapping_init();
+
+void* buddy_alloc(u32 size);
+void buddy_heap_init();
 
 #endif

@@ -11,7 +11,8 @@ extern void task_init();
 extern void task_test();
 extern void mutex_init();
 extern void spin_lock_init();
-void keyboard_init();
+extern void keyboard_init();
+extern void buddy_heap_init();
 
 void kernel_main() {
     console_init();
@@ -31,6 +32,8 @@ void kernel_main() {
     mutex_init();
     spin_lock_init();
     keyboard_init();
+
+    buddy_heap_init();
     task_init();
     task_test();
 }

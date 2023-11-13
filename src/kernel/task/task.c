@@ -256,8 +256,17 @@ void go_to_user_mode(void* user_entry) {
 
 // test
 void user_thread() {
-    syscall(SYSCALL_SLEEP, 3000, 0, 0);
+    // syscall(SYSCALL_SLEEP, 3000, 0, 0);
     print("user thread\n");
+    char* message = (char*)buddy_alloc(20);
+    buddy_free(message);
+    message = (char*)buddy_alloc(20);
+    buddy_free(message);
+    message = (char*)buddy_alloc(500);
+    buddy_free(message);
+    message = (char*)buddy_alloc(500);
+    buddy_free(message);
+
     // asm volatile ("sti");
     suspend();
 }

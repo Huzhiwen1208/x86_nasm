@@ -38,7 +38,7 @@ typedef struct frame_allocator {
             10: in using & belong to kernel
             11: in using & not belong to kernel
     */
-    u8 pages[MAX_PAGES]; 
+    u8 pages[MAX_PAGES];
     u32 total_pages;
     u32 free_pages;
     u32 kernel_pages; // total pages for kernel
@@ -54,6 +54,9 @@ page_table_entry* get_second_page_table(u32 vaddr);
 u32 get_paddr_from_ppn(u32 ppn);
 u32 get_ppn_from_paddr_floor(u32 paddr);
 u32 get_ppn_from_paddr_ceil(u32 paddr);
+page_table_entry* find_pte(u32 vaddr);
+page_table_entry* find_pte_create(u32 vaddr);
+u32 translate_vaddr(u32 vaddr); // return paddr
 
 void memory_init(void* ards_cnt_address);
 void mapping_init();

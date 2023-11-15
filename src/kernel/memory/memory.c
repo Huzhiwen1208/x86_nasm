@@ -182,6 +182,10 @@ void set_cr3(u32 pde) {
     asm volatile ("movl %%eax, %%cr3" :: "a"(pde));
 }
 
+u32 get_cr2() {
+    asm volatile ("movl %cr2, %eax");
+}
+
 static void enable_page() {
     asm volatile ("movl %cr0, %eax");
     asm volatile ("orl $0x80000000, %eax");

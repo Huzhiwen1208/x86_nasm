@@ -19,12 +19,11 @@ void kernel_main() {
     info("GDT & TSS initializing...");
     gdt_tss_init();
     info("GDT & TSS initialized successfully!");
+
     info("IDT & PIC initializing...");
     interrupt_init();
     info("IDT & PIC initialized successfully!");
-    info("Clock initializing...");
-    clock_init();
-    info("Clock initialized successfully!");
+    
     info("Memory page initializing...");
     mapping_init();
     info("Memory page initialized successfully!");

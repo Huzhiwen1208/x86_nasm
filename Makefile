@@ -10,13 +10,17 @@ KernelGccFlags+=-nostdinc -nostdlib -fno-pic -fno-pie -g
 
 BootLoader=src/bootloader
 KernelPath=src/kernel
+UserPath=src/user
 ELFKernel=$(TARGET)/kernel/os.elf
 NakedKernel=$(TARGET)/kernel/os.bin
 KernelSourceFile=$(wildcard $(KernelPath)/*.c) $(wildcard $(KernelPath)/*.asm)
 KernelSourceFile+=$(wildcard $(KernelPath)/*/*.c) $(wildcard $(KernelPath)/*/*.asm)
 KernelSourceFile+=$(wildcard $(KernelPath)/*/*/*.c) $(wildcard $(KernelPath)/*/*/*.asm)
+KernelSourceFile+=$(wildcard $(UserPath)/*/*.c)
+
 KernelOBJ=$(patsubst $(KernelPath)/%.asm, $(TARGET)/kernel/%.o, $(filter %.asm, $(KernelSourceFile)))
-KernelOBJ+=$(patsubst $(KernelPath)/%.c, $(TARGET)/kernel/%.o, $(filter %.c, $(KernelSourceFile)))
+KernelOBJ+=$(patsubst $(KernelPath)/%.c, $(TARGET)/kernel/%.o, $(filter $(KernelPath)/%.c, $(KernelSourceFile)))
+KernelOBJ+=$(patsubst $(UserPath)/%.c, $(TARGET)/user/%.o, $(filter $(UserPath)/%.c, $(KernelSourceFile)))
 ENTRYPOINT=0x7e00
 
 SourceCFile=$(KernelPath)/main.c
@@ -45,6 +49,9 @@ ifeq ($(wildcard $(TARGET)),)
 	@mkdir -p $(TARGET)/kernel/descriptor
 	@mkdir -p $(TARGET)/kernel/fs
 	@mkdir -p $(TARGET)/kernel/user_lib
+
+	@mkdir -p $(TARGET)/user/src
+	@mkdir -p $(TARGET)/user/user_lib
 endif
 
 # test -----
@@ -66,6 +73,9 @@ endif
 
 # .c, .asm ---> .o ------
 $(TARGET)/kernel/%.o: $(KernelPath)/%.c
+	$(GCC) $(KernelGccFlags) -c -o $@ $<
+
+$(TARGET)/user/%.o: $(UserPath)/%.c
 	$(GCC) $(KernelGccFlags) -c -o $@ $<
 
 $(TARGET)/kernel/%.o: $(KernelPath)/%.asm

@@ -250,6 +250,7 @@ u32 translate_vaddr(u32 vaddr) {
     return (ppn << 12) + offset;
 }
 
+
 /// @brief initialize page mapping to MMU and enable page
 void mapping_init() {
     KERNEL_ROOT_PPN = allocate_physical_page_for_kernel();

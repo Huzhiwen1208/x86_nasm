@@ -188,6 +188,12 @@ static void enable_page() {
     asm volatile ("movl %eax, %cr0");
 }
 
+void disable_page() {
+    asm volatile ("movl %cr0, %eax");
+    asm volatile ("andl $0x7fffffff, %eax");
+    asm volatile ("movl %eax, %cr0");
+}
+
 /// @brief default initialize a page table entry
 /// @param pte 
 /// @param index 

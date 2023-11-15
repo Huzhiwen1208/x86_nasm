@@ -8,5 +8,9 @@ void user_thread() {
     char* message = (char*)vaddr;
     *message = 'A';
     print("message: %c\n", *message);
+
+    u32 pid = get_pid();
+    u32 ppid = get_ppid();
+    print("pid: %d, ppid: %d\n", pid, ppid);
     suspend();
 }

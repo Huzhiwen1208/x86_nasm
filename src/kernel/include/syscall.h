@@ -10,5 +10,7 @@
 #define SYSCALL_SPIN_UNLOCK 7
 #define SYSCALL_WRITE 8
 #define SYSCALL_ALLOCATE 9
+#define SYSCALL_GETPID 10
+#define SYSCALL_GETPPID 11
 
 u32 syscall(u32 syscall_num, u32 arg1, u32 arg2, u32 arg3);

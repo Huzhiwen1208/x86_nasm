@@ -40,7 +40,16 @@ typedef struct PCB {
     u32 *stack;
     PCB_STATUS status;
     PCB_MODE mode;
+    u32 pid;
+    u32 parent_pid;
 } PCB;
+
+typedef struct pid_allocator {
+    u32 pids[TASK_SIZE >> 5];
+} pid_allocator;
+
+u32 allocate_pid();
+void free_pid(u32 pid);
 
 typedef struct saved_register {
     u32 edi;

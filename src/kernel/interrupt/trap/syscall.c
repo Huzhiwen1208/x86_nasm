@@ -77,6 +77,10 @@ u32 trap_handler(u32 syscall_num, u32 arg1, u32 arg2, u32 arg3) {
     case SYSCALL_ALLOCATE:
         syscall_allocate(arg1);
         break;
+    case SYSCALL_GETPID:
+        return get_current_task()->pid;
+    case SYSCALL_GETPPID:
+        return get_current_task()->parent_pid;
     default:
         panic("Unknown syscall number: %d", syscall_num);
     }

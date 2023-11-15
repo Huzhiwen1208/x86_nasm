@@ -9,8 +9,30 @@
 
 /// @brief the global task manager
 pcb_manager PCB_MANAGER;
+pid_allocator PID_ALLOCATOR;
 /// @brief the idle task
 PCB* idle_pcb;
+
+u32 allocate_pid() {
+    for (i32 i = 0;i < TASK_SIZE >> 5; i ++) {
+        if (PID_ALLOCATOR.pids[i] != 0xffffffff) {
+            for (i32 j = 0;j < 32; j ++) {
+                if ((PID_ALLOCATOR.pids[i] & (1 << j)) == 0) {
+                    PID_ALLOCATOR.pids[i] |= (1 << j);
+                    return (i << 5) + j;
+                }
+            }
+        }
+    }
+
+    return -1;
+}
+void free_pid(u32 pid) {
+    u32 index = pid >> 5;
+    u32 offset = pid - (index << 5);
+    PID_ALLOCATOR.pids[index] &= ~(1 << offset);
+}
+
 /// @brief initialize the task manager
 void pcb_manager_init() {
     PCB_MANAGER.front = 0;
@@ -72,6 +94,7 @@ static void create_task(void (*entry)(), PCB* pcb) {
     pcb->stack = stack;
     pcb->status = Ready;
     pcb->mode = Kernel;
+    pcb->pid = allocate_pid();
 
     enqueue(pcb);
 }

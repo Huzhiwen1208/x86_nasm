@@ -23,4 +23,12 @@ void allocate_one_page(u32 vaddr) {
     syscall(SYSCALL_ALLOCATE, vaddr, 0, 0);
 }
 
+u32 get_pid() {
+    return syscall(SYSCALL_GETPID, 0, 0, 0);
+}
+
+u32 get_ppid() {
+    return syscall(SYSCALL_GETPPID, 0, 0, 0);
+}
+
 #endif

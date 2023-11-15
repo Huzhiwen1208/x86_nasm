@@ -28,9 +28,6 @@ EXEFile=test/exe.elf
 run: build
 	qemu-system-i386 -m 32M -boot c -hda image/master.img
 
-bochs_run: build
-	bochs -q -f bochs/bochsrc -unlock
-
 build: $(TARGET) $(IMG)
 
 .PHONY: $(TARGET)

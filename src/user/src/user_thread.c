@@ -1,10 +1,8 @@
-#include "../user_lib/stdio.h"
-#include "../../kernel/include/memory.h"
-#include "../../kernel/include/utils.h"
+#include "../user_lib/include/stdio.h"
+#include "../user_lib/include/utils.h"
+#include "../user_lib/include/syscall.h"
 
 void user_thread() {
-    // syscall(SYSCALL_SLEEP, 3000, 0, 0);
-    print("user thread\n");
-    // asm volatile ("sti");
+    print("entry user thread\n");
     suspend();
 }

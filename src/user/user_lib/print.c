@@ -1,7 +1,7 @@
 #include "../../kernel/include/syscall.h"
 #include "../../kernel/include/variable_args.h"
 #include "../../kernel/include/constant.h"
-#include "stdio.h"
+#include "include/stdio.h"
 
 i32 print(const char *fmt, ...) {
     char buf[1024];

@@ -256,6 +256,11 @@ u32 translate_vaddr(u32 vaddr) {
     return (ppn << 12) + offset;
 }
 
+void allocate_page(u32 vaddr) {
+    disable_page();
+    find_pte_create(vaddr);
+    enable_page();
+}
 
 /// @brief initialize page mapping to MMU and enable page
 void mapping_init() {

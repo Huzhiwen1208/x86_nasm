@@ -58,6 +58,7 @@ page_table_entry* find_pte(u32 vaddr);
 page_table_entry* find_pte_create(u32 vaddr);
 u32 translate_vaddr(u32 vaddr); // return paddr
 void disable_page();
+void allocate_page(u32 vaddr);
 
 void memory_init(void* ards_cnt_address);
 void mapping_init();

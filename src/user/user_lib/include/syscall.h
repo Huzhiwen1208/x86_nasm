@@ -19,4 +19,8 @@ void get_time_val(time_val* tv) {
     syscall(SYSCALL_GETTIME_MS, (u32)tv, 0, 0);
 }
 
+void allocate_one_page(u32 vaddr) {
+    syscall(SYSCALL_ALLOCATE, vaddr, 0, 0);
+}
+
 #endif

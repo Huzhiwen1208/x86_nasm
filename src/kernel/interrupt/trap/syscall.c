@@ -6,6 +6,7 @@
 #include "../../include/time.h"
 #include "../../include/mutex.h"
 #include "../../include/fs.h"
+#include "../../include/memory.h"
 
 extern pcb_manager PCB_MANAGER;
 
@@ -31,6 +32,12 @@ static void syscall_sleep(u32 ms) {
 
     sleep_enqueue(current, ms + get_time_ms());
     schedule();
+}
+
+/// @brief allocate one page for vaddr(user)
+/// @param vaddr   
+static void syscall_allocate(u32 vaddr) {
+    allocate_page(vaddr);
 }
 
 /// @brief syscall general entry
@@ -66,6 +73,9 @@ u32 trap_handler(u32 syscall_num, u32 arg1, u32 arg2, u32 arg3) {
         break;
     case SYSCALL_WRITE:
         write(arg1, (char*)arg2, arg3);
+        break;
+    case SYSCALL_ALLOCATE:
+        syscall_allocate(arg1);
         break;
     default:
         panic("Unknown syscall number: %d", syscall_num);

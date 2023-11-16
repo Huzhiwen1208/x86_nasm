@@ -3,14 +3,21 @@
 #include "../user_lib/include/syscall.h"
 
 void user_thread() {
-    print("entry user thread\n");
-    u32 vaddr = 0x1000123;
-    char* message = (char*)vaddr;
-    *message = 'A';
-    print("message: %c\n", *message);
+    print("entry user_thread\n");
 
     u32 pid = get_pid();
     u32 ppid = get_ppid();
     print("pid: %d, ppid: %d\n", pid, ppid);
+
+    // if (fork() == 0) {
+    //     u32 count = 0;
+    //     print("child process\n");
+    //     print("pid: %d, ppid: %d\n", get_pid(), get_ppid());
+    // } else {
+    //     u32 count = 0;
+    //     print("parent process\n");
+    //     print("pid: %d, ppid: %d\n", get_pid(), get_ppid());
+    // }
+
     suspend();
 }

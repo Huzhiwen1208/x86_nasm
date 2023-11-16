@@ -7,6 +7,7 @@ void page_fault(i32 vector) {
     u32 vaddr = get_cr2();
     warn("Page fault at 0x%x", vaddr);
     allocate_page(vaddr);
+    flush_tlb(vaddr);
 }
 
 void page_fault_init() {

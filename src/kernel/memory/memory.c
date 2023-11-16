@@ -2,6 +2,7 @@
 #include "../include/stdio.h"
 #include "../include/type.h"
 #include "../include/utils.h"
+#include "../include/task.h"
 
 /// @brief  the physical frame allocator
 frame_allocator FRAME_ALLOCATOR;
@@ -93,6 +94,9 @@ static void frame_allocator_empty_init() {
         if (i < 1024) {
             FRAME_ALLOCATOR.pages[i] = 0b01; // not in using & belong to kernel
         }
+        if (i < 256) {
+            FRAME_ALLOCATOR.pages[i] = 0b11;
+        }
     }
 }
 
@@ -137,6 +141,7 @@ u32 allocate_physical_page() {
         if (!is_belong_kernel(i) && !is_in_using(i)) {
             set_in_using(i);
             FRAME_ALLOCATOR.free_pages--;
+            memfree(get_paddr_from_ppn(i), PAGE_SIZE);
             return i;
         }
     }
@@ -154,6 +159,7 @@ u32 allocate_physical_page_for_kernel() {
             set_in_using(i);
             FRAME_ALLOCATOR.free_pages--;
             FRAME_ALLOCATOR.kernel_free_pages--;
+            memfree(get_paddr_from_ppn(i), PAGE_SIZE);
             return i;
         }
     }
@@ -171,7 +177,57 @@ static void show_physical_pages() {
 }
 
 u32 get_root_ppn() {
-    return KERNEL_ROOT_PPN;
+    asm volatile ("movl %%cr3, %%eax" ::);
+    asm volatile ("shrl $12, %%eax" ::);
+}
+
+u32 copy_root_ppn() {
+    PCB* current = get_current_task();
+    u32 ppn = allocate_physical_page_for_kernel();
+    memcpy(get_paddr_from_ppn(ppn), get_paddr_from_ppn(current->root_ppn), PAGE_SIZE);
+    return ppn;
+}
+
+u32 copy_root_ppn_recursion() {
+    PCB* current = get_current_task();
+    u32 ppn = allocate_physical_page_for_kernel();
+    memcpy(get_paddr_from_ppn(ppn), get_paddr_from_ppn(current->root_ppn), PAGE_SIZE);
+
+    disable_page();
+    for (i32 i = 1;i < 1024; i ++) {
+        page_table_entry* pte = get_root_page_table() + i;
+        if (pte->present == 0) {
+            continue;
+        }
+
+        u32 second_page_table_ppn = pte->index;
+        page_table_entry* second_page_table = (page_table_entry*)(second_page_table_ppn << 12);
+
+        for (i32 j = 0; j < 1024; j++) {
+            page_table_entry* pte = second_page_table + j;
+            if (pte->present == 0) {
+                continue;
+            }
+
+            u32 physical_page_ppn = pte->index;
+            u32 physical_page_paddr = get_paddr_from_ppn(physical_page_ppn);
+            u32 new_physical_page_ppn = allocate_physical_page_for_kernel();
+            u32 new_physical_page_paddr = get_paddr_from_ppn(new_physical_page_ppn);
+            memcpy(new_physical_page_paddr, physical_page_paddr, PAGE_SIZE);
+            pte->index = new_physical_page_ppn;
+
+            u32 vaddr = (i << 22) + (j << 12);
+            flush_tlb(vaddr);
+        }
+
+        u32 new_second_page_table_ppn = allocate_physical_page_for_kernel();
+        u32 new_second_page_table_paddr = get_paddr_from_ppn(new_second_page_table_ppn);
+        memcpy(new_second_page_table_paddr, second_page_table, PAGE_SIZE);
+        pte->index = new_second_page_table_ppn;
+    }
+    set_cr3(get_paddr_from_ppn(ppn));
+    enable_page();
+    return ppn;
 }
 
 /// @brief set root ppn to cr3
@@ -186,7 +242,7 @@ u32 get_cr2() {
     asm volatile ("movl %cr2, %eax");
 }
 
-static void enable_page() {
+void enable_page() {
     asm volatile ("movl %cr0, %eax");
     asm volatile ("orl $0x80000000, %eax");
     asm volatile ("movl %eax, %cr0");
@@ -266,6 +322,11 @@ void allocate_page(u32 vaddr) {
     enable_page();
 }
 
+void flush_tlb(u32 vaddr) {
+    vaddr = (vaddr >> 12) << 12;
+    asm volatile("invlpg (%0)" ::"r"(vaddr) : "memory");
+}
+
 /// @brief initialize page mapping to MMU and enable page
 void mapping_init() {
     KERNEL_ROOT_PPN = allocate_physical_page_for_kernel();
@@ -286,7 +347,7 @@ void mapping_init() {
             set_in_using(i);
     }
 
-    set_cr3(KERNEL_ROOT_PPN << 12);
+    set_cr3(get_paddr_from_ppn(KERNEL_ROOT_PPN));
     enable_page();
 }
 

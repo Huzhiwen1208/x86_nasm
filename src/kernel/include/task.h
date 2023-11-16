@@ -40,6 +40,8 @@ typedef struct PCB {
     u32 *stack;
     PCB_STATUS status;
     PCB_MODE mode;
+    u32 root_ppn;
+    u32 kernel_stack;
     u32 pid;
     u32 parent_pid;
 } PCB;
@@ -84,5 +86,6 @@ void sleep_wakeup(u32 current_time_ms);
 void wakeup(PCB* pcb);
 
 PCB* get_current_task();
+u32 pcb_fork();
 
 #endif

@@ -10,7 +10,6 @@ void tss_init() {
     memfree((void *) &tss_entry, sizeof(tss));  // clear
     tss_entry.ss0 = KERNEL_DATA_SELECTOR;
     tss_entry.iobase = sizeof(tss);
-    tss_entry.esp0 = 0x107000;
 
     global_descriptor* descriptor = get_from_gdt(KERNEL_TSS_SELECTOR >> 3);
     descriptor->base_low = ((u32)&tss_entry) & 0xffffff; // 24 bits!!!! 0xffff -> 0xffffff, fix error
@@ -52,4 +51,8 @@ void tss_init() {
     user_data->present = 1;     // present in memory
     user_data->privilege = 3;         // DPL = 3
     user_data->type = 0b0010;   // 0DWA(0010)
+}
+
+void set_tss_esp0(u32 addr) {
+    tss_entry.esp0 = addr;
 }

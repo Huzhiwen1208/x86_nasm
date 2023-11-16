@@ -27,7 +27,8 @@ typedef struct page_table_entry {
 typedef struct page_table_entry page_table_entry;
 
 u32 get_root_ppn();
-void set_cr3(u32 pde); // page dir entry => root ppn
+void set_cr3(u32 pde); // page dir entry => root ppn]
+void flush_tlb(u32 vaddr);
 
 typedef struct frame_allocator {
     /* 
@@ -67,4 +68,5 @@ void mapping_init();
 void* buddy_alloc(u32 size);
 void buddy_heap_init();
 
+void set_tss_esp0(u32 addr);
 #endif

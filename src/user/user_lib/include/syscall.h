@@ -31,4 +31,8 @@ u32 get_ppid() {
     return syscall(SYSCALL_GETPPID, 0, 0, 0);
 }
 
+u32 fork() {
+    return syscall(SYSCALL_FORK, 0, 0, 0);
+}
+
 #endif

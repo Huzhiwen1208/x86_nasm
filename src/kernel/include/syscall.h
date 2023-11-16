@@ -12,5 +12,6 @@
 #define SYSCALL_ALLOCATE 9
 #define SYSCALL_GETPID 10
 #define SYSCALL_GETPPID 11
+#define SYSCALL_FORK 12
 
 u32 syscall(u32 syscall_num, u32 arg1, u32 arg2, u32 arg3);

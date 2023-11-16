@@ -79,22 +79,24 @@ i32 is_full() {
 ///        the memory location of the pcb is the physical address => pcb, which should align to 4KB(One Page)
 /// @param entry 
 /// @param pcb 
-static void create_task(void (*entry)(), PCB* pcb) {
+static void create_kernel_task(void (*entry)(), PCB* pcb) {
     u32 stack = (u32)pcb + (u32)PAGE_SIZE;
 
     stack -= sizeof(saved_register);
 
     saved_register* sr = (saved_register*)stack;
     sr->eip = (u32)entry;
-    sr->ebp = 0x1;
-    sr->ebx = 0x2;
-    sr->esi = 0x3;
-    sr->edi = 0x4;
+    sr->ebp = 0x0;
+    sr->ebx = 0x0;
+    sr->esi = 0x0;
+    sr->edi = 0x0;
 
     pcb->stack = stack;
     pcb->status = Ready;
     pcb->mode = Kernel;
     pcb->pid = allocate_pid();
+    pcb->root_ppn = get_root_ppn();
+    pcb->kernel_stack = get_paddr_from_ppn(allocate_physical_page_for_kernel()) + PAGE_SIZE;
 
     enqueue(pcb);
 }
@@ -226,6 +228,11 @@ void sleep_wakeup(u32 current_time_ms) {
     }
 }
 
+u32 pcb_fork() {
+   
+}
+
+
 /// @brief idle task
 static void idle() {
     while(true) {
@@ -238,22 +245,22 @@ static void idle() {
 /// @brief initialize the task manager and idle task
 void task_init() {
     pcb_manager_init();
-    create_task(idle, get_paddr_from_ppn(allocate_physical_page_for_kernel()));
+    create_kernel_task(idle, get_paddr_from_ppn(allocate_physical_page_for_kernel()));
     idle_pcb = fetch_task();
 }
 
-
-extern void __restore;
 void go_to_user_mode(void* user_entry) {
-    u32* kernel_stack = (u32*)((u32)get_paddr_from_ppn(
-        allocate_physical_page_for_kernel()
-    ) + (u32)PAGE_SIZE);
+    PCB* current = get_current_task();
 
-    u32* user_stack = (u32*)((u32)get_paddr_from_ppn(
+    u32 user_stack = (u32)get_paddr_from_ppn(
         allocate_physical_page_for_kernel()
-    ) + (u32)PAGE_SIZE);
+    ) + (u32)PAGE_SIZE;
 
-    trap_context* ctx = (trap_context*)((u32)kernel_stack - sizeof(trap_context));
+    set_tss_esp0(current->kernel_stack);
+    current->root_ppn = copy_root_ppn();
+    set_cr3(get_paddr_from_ppn(current->root_ppn));
+
+    trap_context* ctx = (trap_context*)((u32)current->kernel_stack - sizeof(trap_context));
     ctx->edi=0;
     ctx->esi=0;
     ctx->ebp=0;
@@ -262,14 +269,14 @@ void go_to_user_mode(void* user_entry) {
     ctx->edx=0;
     ctx->ecx=0;
     ctx->eax=0;
-    ctx->gs=0;
+    ctx->gs=USER_DATA_SELECTOR;
     ctx->fs=USER_DATA_SELECTOR;
     ctx->es=USER_DATA_SELECTOR;
     ctx->ds=USER_DATA_SELECTOR;
     ctx->eip=user_entry;
     ctx->cs=USER_CODE_SELECTOR;
     ctx->eflags=(0 << 12 | 0b10 | 1 << 9);
-    ctx->esp3=(u32)user_stack;
+    ctx->esp3=user_stack;
     ctx->ss3=USER_DATA_SELECTOR;
 
     asm volatile ("movl %0, %%esp" : : "m"(ctx));
@@ -280,20 +287,15 @@ void go_to_user_mode(void* user_entry) {
 extern void user_thread();
 
 void thread_a() {
-    asm volatile ("sti");
-    println("Entry A thread at time: %d", get_time_ms());
     go_to_user_mode(user_thread);
-    suspend();
 }
 
 void thread_b() {
     asm volatile ("sti");
-    println("Entry B thread at time: %d", get_time_ms());
-    suspend();
+    go_to_user_mode(user_thread);
 }
 
 /// @brief test the task manager
 void task_test() {
-    create_task(thread_a, get_paddr_from_ppn(allocate_physical_page_for_kernel()));
-    // create_task(thread_b, get_paddr_from_ppn(allocate_physical_page_for_kernel()));
+    create_kernel_task(thread_a, get_paddr_from_ppn(allocate_physical_page_for_kernel()));
 }

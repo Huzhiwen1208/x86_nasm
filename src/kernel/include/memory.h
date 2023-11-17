@@ -62,5 +62,12 @@ page_table_entry* get_second_page_table(u32 vaddr);
 u32 get_paddr_from_ppn(u32 ppn);
 u32 get_ppn_from_paddr_floor(u32 paddr);
 u32 get_ppn_from_paddr_ceil(u32 paddr);
+void flush_tlb(u32 vaddr);
+void allocate_page(u32 vaddr);
+u32 get_cr2();
+page_table_entry* find_pte(u32 vaddr);
+page_table_entry* find_pte_create(u32 vaddr);
+u32 translate_vaddr(u32 vaddr);
+void disable_page();
 
 #endif

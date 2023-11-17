@@ -244,3 +244,73 @@ void memory_init(void* ards_cnt_address) {
 
     // show_physical_pages();
 }
+
+void flush_tlb(u32 vaddr) {
+    vaddr = (vaddr >> 12) << 12;
+    asm volatile("invlpg (%0)" ::"r"(vaddr) : "memory");
+}
+
+void allocate_page(u32 vaddr) {
+    disable_page();
+    find_pte_create(vaddr);
+    enable_page();
+}
+
+u32 get_cr2() {
+    asm volatile ("movl %cr2, %eax");
+}
+
+page_table_entry* find_pte(u32 vaddr) {
+    page_table_entry* pte = get_root_page_table();
+    u32 first_page_index = get_first_page_index(vaddr);
+    pte += first_page_index;
+    if (pte->present == 0) {
+        return NULL;
+    }
+
+    pte = (page_table_entry*)(pte->index << 12); // second page table
+    u32 second_page_index = get_second_page_index(vaddr);
+    pte += second_page_index;
+    if (pte->present == 0) {
+        return NULL;
+    }
+
+    return pte;
+}
+
+page_table_entry* find_pte_create(u32 vaddr) {
+    page_table_entry* pte = get_root_page_table();
+    u32 first_page_index = get_first_page_index(vaddr);
+    pte += first_page_index;
+    if (pte->present == 0) {
+        u32 second_page_table_idx = allocate_physical_page();
+        pte_init(pte, second_page_table_idx);
+    }
+
+    pte = (page_table_entry*)(pte->index << 12); // second page table
+    u32 second_page_index = get_second_page_index(vaddr);
+    pte += second_page_index;
+    if (pte->present == 0) {
+        u32 physical_page = allocate_physical_page();
+        pte_init(pte, physical_page);
+    }
+
+    return pte;
+}
+
+u32 translate_vaddr(u32 vaddr) {
+    page_table_entry* pte = find_pte(vaddr);
+    if (pte == NULL) {
+        return NULL;
+    }
+
+    u32 ppn = pte->index;
+    u32 offset = get_physical_page_offset(vaddr);
+    return (ppn << 12) + offset;
+}
+
+void disable_page() {
+    asm volatile ("movl %cr0, %eax");
+    asm volatile ("andl $0x7fffffff, %eax");
+    asm volatile ("movl %eax, %cr0");
+}

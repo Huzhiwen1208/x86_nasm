@@ -154,6 +154,7 @@ void idt_init() {
 void interrupt_init() {
     pic_init();
     idt_init();
+    page_fault_init();
 }
 
 /// @brief get interrupt status(IF)

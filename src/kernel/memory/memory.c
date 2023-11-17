@@ -183,8 +183,10 @@ u32 get_root_ppn() {
 
 u32 copy_root_ppn() {
     PCB* current = get_current_task();
+    u32 cur_root_ppn = current == NULL? get_root_ppn(): current->root_ppn;
+
     u32 ppn = allocate_physical_page_for_kernel();
-    memcpy(get_paddr_from_ppn(ppn), get_paddr_from_ppn(current->root_ppn), PAGE_SIZE);
+    memcpy(get_paddr_from_ppn(ppn), get_paddr_from_ppn(cur_root_ppn), PAGE_SIZE);
     return ppn;
 }
 

@@ -8,22 +8,22 @@ interrupt_handler_%1:
     push 0x88888888
 %endif
     ; save context 
-    pushad
     push ds
     push es
     push fs
     push gs
+    pushad
 
     push %1
     call [handler_list + %1 * 4]
     add esp, 4; pop %1
 
     ; restore context
+    popad
     pop gs
     pop fs
     pop es
     pop ds
-    popad
     add esp, 4; pop 0x88888888/error code
 
     iret

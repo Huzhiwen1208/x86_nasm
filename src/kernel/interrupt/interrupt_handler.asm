@@ -2,31 +2,23 @@
 section .text
 
 extern handler_list
+extern __restore
 %macro INTERRUPT_HANDLER 2
 interrupt_handler_%1:
 %ifn %2
     push 0x88888888
 %endif
     ; save context 
-    pushad
     push ds
     push es
     push fs
     push gs
+    pushad
 
     push %1
     call [handler_list + %1 * 4]
-    add esp, 4; pop %1
+    jmp __restore
 
-    ; restore context
-    pop gs
-    pop fs
-    pop es
-    pop ds
-    popad
-    add esp, 4; pop 0x88888888/error code
-
-    iret
 %endmacro
 
 INTERRUPT_HANDLER 0x00, 0; 0x00 #DE Divide Error

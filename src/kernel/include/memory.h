@@ -28,6 +28,7 @@ typedef struct page_table_entry page_table_entry;
 
 u32 get_root_ppn();
 void set_cr3(u32 pde); // page dir entry => root ppn
+void set_tss_esp0(u32 esp0);
 
 typedef struct frame_allocator {
     /* 

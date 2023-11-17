@@ -53,3 +53,7 @@ void tss_init() {
     user_data->privilege = 3;         // DPL = 3
     user_data->type = 0b0010;   // 0DWA(0010)
 }
+
+void set_tss_esp0(u32 esp0) {
+    tss_entry.esp0 = esp0;
+}

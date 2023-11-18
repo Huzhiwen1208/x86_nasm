@@ -192,21 +192,27 @@ u32 copy_root_ppn() {
 
 u32 copy_root_ppn_recursion() {
     PCB* current = get_current_task();
+    u32 cur_root_ppn = current == NULL? get_root_ppn(): current->root_ppn;
     u32 ppn = allocate_physical_page_for_kernel();
-    memcpy(get_paddr_from_ppn(ppn), get_paddr_from_ppn(current->root_ppn), PAGE_SIZE);
+    memcpy(get_paddr_from_ppn(ppn), get_paddr_from_ppn(cur_root_ppn), PAGE_SIZE);
 
     disable_page();
-    for (i32 i = 1;i < 1024; i ++) {
-        page_table_entry* pte = get_root_page_table() + i;
+    for (i32 i = 1; i < 1024; i ++) {
+        page_table_entry* pte = get_paddr_from_ppn(cur_root_ppn) + i;
         if (pte->present == 0) {
             continue;
         }
 
         u32 second_page_table_ppn = pte->index;
-        page_table_entry* second_page_table = (page_table_entry*)(second_page_table_ppn << 12);
+        page_table_entry* second_page_table = get_paddr_from_ppn(second_page_table_ppn);
+
+        u32 new_second_page_table_ppn = allocate_physical_page_for_kernel();
+        page_table_entry* new_second_page_table = get_paddr_from_ppn(new_second_page_table_ppn);
+        memcpy(new_second_page_table, second_page_table, PAGE_SIZE);
+        pte->index = new_second_page_table_ppn;
 
         for (i32 j = 0; j < 1024; j++) {
-            page_table_entry* pte = second_page_table + j;
+            page_table_entry* pte = new_second_page_table + j;
             if (pte->present == 0) {
                 continue;
             }
@@ -217,15 +223,7 @@ u32 copy_root_ppn_recursion() {
             u32 new_physical_page_paddr = get_paddr_from_ppn(new_physical_page_ppn);
             memcpy(new_physical_page_paddr, physical_page_paddr, PAGE_SIZE);
             pte->index = new_physical_page_ppn;
-
-            u32 vaddr = (i << 22) + (j << 12);
-            flush_tlb(vaddr);
         }
-
-        u32 new_second_page_table_ppn = allocate_physical_page_for_kernel();
-        u32 new_second_page_table_paddr = get_paddr_from_ppn(new_second_page_table_ppn);
-        memcpy(new_second_page_table_paddr, second_page_table, PAGE_SIZE);
-        pte->index = new_second_page_table_ppn;
     }
     set_cr3(get_paddr_from_ppn(ppn));
     enable_page();

@@ -9,19 +9,35 @@ void user_thread() {
     u32 ppid = get_ppid();
     print("pid: %d, ppid: %d\n", pid, ppid);
 
-    // if (fork() == 0) {
-    //     u32 count = 0;
-    //     print("child process\n");
-    //     print("pid: %d, ppid: %d\n", get_pid(), get_ppid());
-    // } else {
-    //     u32 count = 0;
-    //     print("parent process\n");
-    //     print("pid: %d, ppid: %d\n", get_pid(), get_ppid());
+    if (fork() == 0) {
+        u32 count = 0;
+        print("child process\n");
+        u32 pid = get_pid();
+        u32 ppid = get_ppid();
+        print("pid: %d, ppid: %d\n", pid, ppid);
+
+        for (int i = 0; i < 100; i++) {
+            count++;
+            print("child process: %d\n", count);
+        }
+    } else {
+        u32 count = 0;
+        print("parent process\n");
+        u32 pid = get_pid();
+        u32 ppid = get_ppid();
+        print("pid: %d, ppid: %d\n", pid, ppid);
+
+        for (int i = 0; i < 100; i++) {
+            count++;
+            print("parent process: %d\n", count);
+        }
+    }
+    
+    // while(1) {
+    //     u32 a = 3;
+    //     u32 b = 4;
+    //     u32 c = a + b;
     // }
-    for (i32 i = 0;i < 5; i+=2) {
-        sleep(1000);
-        print("I: %d\n", i);
-    }   
 
     suspend();
 }
@@ -42,10 +58,11 @@ void user_thread1() {
     //     print("parent process\n");
     //     print("pid: %d, ppid: %d\n", get_pid(), get_ppid());
     // }
-    for (i32 i = 0;i < 5; i+=2) {
-        sleep(1000);
-        print("IIII: %d\n", i);
-    }   
+    while(1) {
+        u32 a = 3;
+        u32 b = 4;
+        u32 c = a + b;
+    }
 
     suspend();
 }

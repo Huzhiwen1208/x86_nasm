@@ -199,8 +199,11 @@ void schedule() {
     }
     if (next_task->mode == User) {
         set_tss_esp0(next_task->kernel_stack);
+    }
+    if (next_task->root_ppn != get_root_ppn()) {
         set_cr3(get_paddr_from_ppn(next_task->root_ppn));
     }
+
     PCB_MANAGER.current = next_task;
     PCB_MANAGER.current->status = Running;
     __switch(current, next_task);
@@ -289,10 +292,6 @@ void sleep_wakeup(u32 current_time_ms) {
     }
 }
 
-u32 pcb_fork() {
-   
-}
-
 
 /// @brief idle task
 static void idle() {
@@ -359,6 +358,45 @@ void thread_b() {
 void task_test() {
     // create_kernel_task(thread_a, get_paddr_from_ppn(allocate_physical_page_for_kernel()));
     create_user_task(user_thread, get_paddr_from_ppn(allocate_physical_page_for_kernel()));
-    create_user_task(user_thread1, get_paddr_from_ppn(allocate_physical_page_for_kernel()));
+    // create_user_task(user_thread1, get_paddr_from_ppn(allocate_physical_page_for_kernel()));
     asm volatile ("sti");
+}
+
+void build_child_stack(PCB* child, PCB* parent) {
+    u32 stack = (u32)child + (u32)PAGE_SIZE;
+
+    stack -= sizeof(saved_register);
+
+    saved_register* sr = (saved_register*)stack;
+    sr->eip = (u32)goto_user;
+    sr->ebp = 0x0;
+    sr->ebx = 0x0;
+    sr->esi = 0x0;
+    sr->edi = 0x0;
+
+    child->stack = stack;
+
+    u32 child_kernel_stack = child->kernel_stack;
+    u32 parent_kernel_stack = parent->kernel_stack;
+    memcpy(child_kernel_stack-PAGE_SIZE, parent_kernel_stack-PAGE_SIZE, PAGE_SIZE);
+
+    trap_context* ctx = (trap_context*)(child_kernel_stack - sizeof(trap_context));
+    ctx->eax = 0;
+}
+
+// fork
+u32 pcb_fork() {
+    PCB* parent = get_current_task();
+    PCB* child = (PCB*)get_paddr_from_ppn(allocate_physical_page_for_kernel());
+    child->status = Ready;
+    child->mode = parent->mode;
+    child->pid = allocate_pid();
+    child->parent_pid = parent->pid;
+    child->root_ppn = copy_root_ppn_recursion();
+    child->kernel_stack = get_paddr_from_ppn(allocate_physical_page_for_kernel()) + PAGE_SIZE;
+
+    build_child_stack(child, parent);
+    enqueue(child);
+    schedule();
+    return 1;
 }

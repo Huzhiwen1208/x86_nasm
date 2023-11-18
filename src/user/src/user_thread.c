@@ -15,22 +15,12 @@ void user_thread() {
         u32 pid = get_pid();
         u32 ppid = get_ppid();
         print("pid: %d, ppid: %d\n", pid, ppid);
-
-        for (int i = 0; i < 100; i++) {
-            count++;
-            print("child process: %d\n", count);
-        }
     } else {
         u32 count = 0;
         print("parent process\n");
         u32 pid = get_pid();
         u32 ppid = get_ppid();
         print("pid: %d, ppid: %d\n", pid, ppid);
-
-        for (int i = 0; i < 100; i++) {
-            count++;
-            print("parent process: %d\n", count);
-        }
     }
     
     // while(1) {

@@ -358,7 +358,7 @@ void thread_b() {
 void task_test() {
     // create_kernel_task(thread_a, get_paddr_from_ppn(allocate_physical_page_for_kernel()));
     create_user_task(user_thread, get_paddr_from_ppn(allocate_physical_page_for_kernel()));
-    // create_user_task(user_thread1, get_paddr_from_ppn(allocate_physical_page_for_kernel()));
+    create_user_task(user_thread1, get_paddr_from_ppn(allocate_physical_page_for_kernel()));
     asm volatile ("sti");
 }
 

@@ -206,7 +206,7 @@ u32 copy_root_ppn_recursion() {
         u32 second_page_table_ppn = pte->index;
         page_table_entry* second_page_table = get_paddr_from_ppn(second_page_table_ppn);
 
-        u32 new_second_page_table_ppn = allocate_physical_page_for_kernel();
+        u32 new_second_page_table_ppn = allocate_physical_page();
         page_table_entry* new_second_page_table = get_paddr_from_ppn(new_second_page_table_ppn);
         memcpy(new_second_page_table, second_page_table, PAGE_SIZE);
         pte->index = new_second_page_table_ppn;
@@ -219,7 +219,7 @@ u32 copy_root_ppn_recursion() {
 
             u32 physical_page_ppn = pte->index;
             u32 physical_page_paddr = get_paddr_from_ppn(physical_page_ppn);
-            u32 new_physical_page_ppn = allocate_physical_page_for_kernel();
+            u32 new_physical_page_ppn = allocate_physical_page();
             u32 new_physical_page_paddr = get_paddr_from_ppn(new_physical_page_ppn);
             memcpy(new_physical_page_paddr, physical_page_paddr, PAGE_SIZE);
             pte->index = new_physical_page_ppn;

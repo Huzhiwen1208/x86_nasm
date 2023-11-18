@@ -230,6 +230,32 @@ u32 copy_root_ppn_recursion() {
     return ppn;
 }
 
+void free_page_table_recursion(u32 root_ppn) {
+    disable_page();
+    for (i32 i = 1; i < 1024; i ++) {
+        page_table_entry* pte = get_paddr_from_ppn(root_ppn) + i;
+        if (pte->present == 0) {
+            continue;
+        }
+
+        u32 second_page_table_ppn = pte->index;
+        page_table_entry* second_page_table = get_paddr_from_ppn(second_page_table_ppn);
+
+        for (i32 j = 0; j < 1024; j++) {
+            page_table_entry* pte = second_page_table + j;
+            if (pte->present == 0) {
+                continue;
+            }
+
+            u32 physical_page_ppn = pte->index;
+            free_physical_page(physical_page_ppn);
+        }
+        free_physical_page(second_page_table_ppn);
+    }
+    free_physical_page(root_ppn);
+    enable_page();
+}
+
 /// @brief set root ppn to cr3
 /// @param pde 
 void set_cr3(u32 pde) {

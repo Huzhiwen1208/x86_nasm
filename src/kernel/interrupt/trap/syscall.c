@@ -8,8 +8,6 @@
 #include "../../include/fs.h"
 #include "../../include/memory.h"
 
-extern pcb_manager PCB_MANAGER;
-
 /// @brief test syscall
 /// @param arg1 
 /// @param arg2 
@@ -42,6 +40,10 @@ static void syscall_allocate(u32 vaddr) {
 
 static u32 syscall_fork() {
     pcb_fork();
+}
+
+static void syscall_exit(u32 exit_code) {
+    pcb_exit(exit_code);
 }
 
 /// @brief syscall general entry
@@ -87,6 +89,9 @@ u32 trap_handler(u32 syscall_num, u32 arg1, u32 arg2, u32 arg3) {
         return get_current_task()->parent_pid;
     case SYSCALL_FORK:
         return syscall_fork();
+    case SYSCALL_EXIT:
+        syscall_exit(arg1);
+        break;
     default:
         panic("Unknown syscall number: %d", syscall_num);
     }

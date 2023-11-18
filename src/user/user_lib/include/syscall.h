@@ -35,4 +35,8 @@ u32 fork() {
     return syscall(SYSCALL_FORK, 0, 0, 0);
 }
 
+void exit(u32 exit_code) {
+    syscall(SYSCALL_EXIT, exit_code, 0, 0);
+}
+
 #endif

@@ -7,7 +7,8 @@
 typedef enum PCB_STATUS {
     Running,
     Block,
-    Ready
+    Ready,
+    Zombie
 } PCB_STATUS;
 
 typedef enum PCB_MODE {

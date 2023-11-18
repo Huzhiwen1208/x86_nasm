@@ -5,22 +5,32 @@
 void user_thread() {
     print("entry user_thread\n");
 
-    u32 pid = get_pid();
-    u32 ppid = get_ppid();
-    print("pid: %d, ppid: %d\n", pid, ppid);
-
     if (fork() == 0) {
         u32 count = 0;
         print("child process\n");
         u32 pid = get_pid();
         u32 ppid = get_ppid();
         print("pid: %d, ppid: %d\n", pid, ppid);
+        for (int i = 0; i < 5; i++) {
+            count++;
+            print("child process: %d\n", count);
+            sleep(10);
+            if (count == 3) {
+                print("child process exit\n");
+                exit(0);
+            }
+        }
     } else {
         u32 count = 0;
         print("parent process\n");
         u32 pid = get_pid();
         u32 ppid = get_ppid();
         print("pid: %d, ppid: %d\n", pid, ppid);
+        for (int i = 0; i < 5; i++) {
+            count++;
+            sleep(10);
+            print("parent process: %d\n", count);
+        }
     }
     
     // while(1) {

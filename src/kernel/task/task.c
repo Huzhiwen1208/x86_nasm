@@ -193,7 +193,7 @@ void schedule() {
     }
     PCB* next_task = fetch_task();
     PCB* current = PCB_MANAGER.current;
-    if (current->status != Block) {
+    if (current->status != Block && current->status != Zombie) {
         current->status = Ready;
         if (current->pid != 0) enqueue(PCB_MANAGER.current);
     }
@@ -358,7 +358,7 @@ void thread_b() {
 void task_test() {
     // create_kernel_task(thread_a, get_paddr_from_ppn(allocate_physical_page_for_kernel()));
     create_user_task(user_thread, get_paddr_from_ppn(allocate_physical_page_for_kernel()));
-    create_user_task(user_thread1, get_paddr_from_ppn(allocate_physical_page_for_kernel()));
+    // create_user_task(user_thread1, get_paddr_from_ppn(allocate_physical_page_for_kernel()));
     asm volatile ("sti");
 }
 
@@ -399,4 +399,39 @@ u32 pcb_fork() {
     enqueue(child);
     schedule();
     return 1;
+}
+
+void free_page_table(PCB* pcb) {
+    u32 root_ppn = pcb->root_ppn;
+    free_page_table_recursion(root_ppn);
+}
+
+void free_kernel_task(PCB* pcb) {
+    u32 kernel_stack = pcb->kernel_stack;
+    free_physical_page(get_ppn_from_paddr_floor(kernel_stack - PAGE_SIZE));
+}
+
+void change_parent_pid(u32 pid, u32 parent_pid) {
+    for (i32 i = 0;i < TASK_SIZE; i ++) {
+        if (PCB_MANAGER.tasks[i] != NULL && PCB_MANAGER.tasks[i]->parent_pid == pid) {
+            PCB_MANAGER.tasks[i]->parent_pid = parent_pid;
+        }
+    }
+}
+
+// exit
+void pcb_exit(u32 exit_code) {
+    PCB* current = get_current_task();
+    // free page table 
+    free_page_table(current);
+    // free kernel stack
+    free_kernel_task(current);
+    // free pid
+    free_pid(current->pid);
+    // change parent pid of children to parent pid of current task
+    change_parent_pid(current->pid, current->parent_pid);
+
+    // status to zombie
+    current->status = Zombie;
+    schedule();
 }

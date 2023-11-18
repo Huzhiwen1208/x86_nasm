@@ -60,6 +60,7 @@ page_table_entry* find_pte_create(u32 vaddr);
 u32 translate_vaddr(u32 vaddr); // return paddr
 void disable_page();
 void allocate_page(u32 vaddr);
+void free_page_table_recursion(u32 root_ppn);
 u32 get_cr2();
 
 void memory_init(void* ards_cnt_address);

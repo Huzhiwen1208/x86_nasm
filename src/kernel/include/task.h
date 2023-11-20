@@ -49,6 +49,7 @@ typedef struct PCB {
     u32 kernel_stack;
     u32 pid;
     u32 parent_pid;
+    i32 exit_code;
 } PCB;
 
 typedef struct pid_allocator {
@@ -80,6 +81,8 @@ typedef struct pcb_manager {
 
     /// @brief sleep queue, priority queue
     sleep_pcb* sleep_pcb_list;
+    /// @brief zombie queue
+    PCB* zombies[TASK_SIZE];
 } pcb_manager;
 
 void task_init();
@@ -92,5 +95,7 @@ void wakeup(PCB* pcb);
 
 PCB* get_current_task();
 u32 pcb_fork();
+void pcb_exit(i32 exit_code);
+i32 pcb_waitpid(u32 pid, i32* exit_code);
 
 #endif

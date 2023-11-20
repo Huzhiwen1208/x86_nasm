@@ -42,8 +42,12 @@ static u32 syscall_fork() {
     pcb_fork();
 }
 
-static void syscall_exit(u32 exit_code) {
+static void syscall_exit(i32 exit_code) {
     pcb_exit(exit_code);
+}
+
+static i32 syscall_waitpid(u32 pid, i32* exit_code) {
+    return pcb_waitpid(pid, exit_code);
 }
 
 /// @brief syscall general entry
@@ -92,6 +96,8 @@ u32 trap_handler(u32 syscall_num, u32 arg1, u32 arg2, u32 arg3) {
     case SYSCALL_EXIT:
         syscall_exit(arg1);
         break;
+    case SYSCALL_WAITPID:
+        return syscall_waitpid(arg1, (i32*)arg2);
     default:
         panic("Unknown syscall number: %d", syscall_num);
     }

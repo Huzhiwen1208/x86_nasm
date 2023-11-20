@@ -45,7 +45,7 @@ void pcb_manager_init() {
 /// @brief add a task to the ready queue
 /// @param pcb 
 void enqueue(PCB* pcb) {
-     assert(pcb->status == Ready);
+    assert(pcb->status == Ready);
     if (is_full()) {
         panic("PCB queue is full");
     }
@@ -64,6 +64,33 @@ PCB* dequeue() {
     PCB* result = PCB_MANAGER.tasks[PCB_MANAGER.front];
     PCB_MANAGER.tasks[PCB_MANAGER.front] = 0x0; // free the memory
     PCB_MANAGER.front = (PCB_MANAGER.front + 1) % TASK_SIZE;
+    return result;
+}
+
+void zombied(PCB* pcb) {
+    for(i32 i = 0;i < TASK_SIZE; i++) {
+        if (PCB_MANAGER.zombies[i] == NULL) {
+            PCB_MANAGER.zombies[i] = pcb;
+            return;
+        }
+    }
+    panic("zombied tasks is full");
+}
+
+PCB* get_zombied_task_by_ppid(u32 ppid, u32 pid) {
+    PCB* result = NULL;
+
+    for (i32 i = 0;i < TASK_SIZE; i++) {
+        if (PCB_MANAGER.zombies[i] == NULL)
+            continue;
+        if (PCB_MANAGER.zombies[i]->parent_pid == ppid &&
+            (PCB_MANAGER.zombies[i]->pid == pid || pid == -1)) {
+            result = PCB_MANAGER.zombies[i];
+            PCB_MANAGER.zombies[i] = NULL;
+            break;
+        }
+    }
+
     return result;
 }
 
@@ -193,9 +220,18 @@ void schedule() {
     }
     PCB* next_task = fetch_task();
     PCB* current = PCB_MANAGER.current;
-    if (current->status != Block && current->status != Zombie) {
-        current->status = Ready;
-        if (current->pid != 0) enqueue(PCB_MANAGER.current);
+
+    switch (current->status) {
+        case Running:
+            current->status = Ready;
+            if (current->pid) enqueue(current);
+            break;
+        case Block:
+        case Zombie:
+            break;
+        case Ready:
+        default:
+            panic("pigs might fly!");
     }
     if (next_task->mode == User) {
         set_tss_esp0(next_task->kernel_stack);
@@ -358,7 +394,6 @@ void thread_b() {
 void task_test() {
     // create_kernel_task(thread_a, get_paddr_from_ppn(allocate_physical_page_for_kernel()));
     create_user_task(user_thread, get_paddr_from_ppn(allocate_physical_page_for_kernel()));
-    // create_user_task(user_thread1, get_paddr_from_ppn(allocate_physical_page_for_kernel()));
     asm volatile ("sti");
 }
 
@@ -420,7 +455,7 @@ void change_parent_pid(u32 pid, u32 parent_pid) {
 }
 
 // exit
-void pcb_exit(u32 exit_code) {
+void pcb_exit(i32 exit_code) {
     PCB* current = get_current_task();
     // free page table 
     free_page_table(current);
@@ -433,5 +468,37 @@ void pcb_exit(u32 exit_code) {
 
     // status to zombie
     current->status = Zombie;
+    current->exit_code = exit_code;
+    zombied(current);
     schedule();
+}
+
+// waitpid
+i32 pcb_waitpid(u32 pid, i32* exit_code) {
+    // find child pid that its status is Zombie
+    PCB* cur = get_current_task();
+    PCB* activate_child = NULL;
+    for (i32 i = 0; i < TASK_SIZE; i++) {
+        if (PCB_MANAGER.tasks[i] != NULL &&
+            PCB_MANAGER.tasks[i]->parent_pid == cur->pid &&
+            (pid == -1 || PCB_MANAGER.tasks[i]->pid == pid)
+        ) {
+            activate_child = PCB_MANAGER.tasks[i];
+        }
+    }
+
+    PCB* zombie_child = get_zombied_task_by_ppid(cur->pid, pid);
+    // has no specified child
+    if (activate_child == NULL && zombie_child == NULL) {
+        return -1;
+    }
+
+    if (zombie_child == NULL) {
+        return -2;
+    }
+
+    u32 found_pid = zombie_child->pid;
+    *exit_code = zombie_child->exit_code;
+    free_page_table(zombie_child);
+    return found_pid;
 }

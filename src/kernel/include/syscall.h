@@ -14,5 +14,6 @@
 #define SYSCALL_GETPPID 11
 #define SYSCALL_FORK 12
 #define SYSCALL_EXIT 13
+#define SYSCALL_WAITPID 14
 
 u32 syscall(u32 syscall_num, u32 arg1, u32 arg2, u32 arg3);

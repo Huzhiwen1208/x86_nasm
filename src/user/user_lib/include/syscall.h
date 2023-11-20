@@ -35,8 +35,20 @@ u32 fork() {
     return syscall(SYSCALL_FORK, 0, 0, 0);
 }
 
-void exit(u32 exit_code) {
+void exit(i32 exit_code) {
     syscall(SYSCALL_EXIT, exit_code, 0, 0);
+}
+
+i32 waitpid(i32 pid, i32* exit_code) {
+    while(true) {
+        i32 result_pid = syscall(SYSCALL_WAITPID, (u32)pid, (u32)exit_code, 0);
+        switch (result_pid) {
+        case -2:
+            yield();
+        default:
+            return result_pid;
+        }
+    }
 }
 
 #endif

@@ -7,38 +7,18 @@ void user_thread() {
 
     if (fork() == 0) {
         u32 count = 0;
-        print("child process\n");
-        u32 pid = get_pid();
-        u32 ppid = get_ppid();
-        print("pid: %d, ppid: %d\n", pid, ppid);
-        for (int i = 0; i < 5; i++) {
-            count++;
-            print("child process: %d\n", count);
-            sleep(10);
-            if (count == 3) {
-                print("child process exit\n");
-                exit(0);
-            }
-        }
+        print("child process pid: %d, ppid: %d\n", get_pid(), get_ppid());
+        print("child process exit!!!\n");
+        exit(1);
     } else {
         u32 count = 0;
-        print("parent process\n");
-        u32 pid = get_pid();
-        u32 ppid = get_ppid();
-        print("pid: %d, ppid: %d\n", pid, ppid);
-        for (int i = 0; i < 5; i++) {
-            count++;
-            sleep(10);
-            print("parent process: %d\n", count);
-        }
+        print("parent process pid: %d, ppid: %d\n", get_pid(), get_ppid());
+
+        i32 child_exit_code;
+        i32 child_pid = waitpid(-1, &child_exit_code);
+        print("child: {pid=%d} has been killed in exit code %d\n", child_pid, child_exit_code);
     }
     
-    // while(1) {
-    //     u32 a = 3;
-    //     u32 b = 4;
-    //     u32 c = a + b;
-    // }
-
     suspend();
 }
 

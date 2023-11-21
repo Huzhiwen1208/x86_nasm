@@ -1,4 +1,5 @@
 #include "../include/descriptor.h"
+#include "../include/log.h"
 #include "../include/utils.h"
 
 /// @brief the global gdt
@@ -23,8 +24,10 @@ void gdt_init() {
 }
 
 void gdt_tss_init() {
+    info("GDT & TSS initializing...");
     gdt_init();
     tss_init();
+    info("GDT & TSS initialized successfully!");
 }
 
 global_descriptor* get_from_gdt(u16 index) {

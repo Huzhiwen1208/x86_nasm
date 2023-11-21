@@ -152,10 +152,12 @@ void idt_init() {
 }
 
 void interrupt_init() {
+    info("IDT & PIC initializing...");
     pic_init();
     idt_init();
     page_fault_init();
     clock_init();
+    info("IDT & PIC initialized successfully!");
 }
 
 /// @brief get interrupt status(IF)

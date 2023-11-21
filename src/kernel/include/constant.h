@@ -36,4 +36,9 @@
 // Heap_Block
 #define MAX_FREE_BLOCK 256
 
+// DISK PIO
+#define SECTOR_BYTE_SIZE 512
+#define IDE_CTL_COUNT 2  // the count of ide control
+#define IDE_DISK_COUNT 2 // count of disk of every ide control
+
 #endif // __CONSTANT_H__

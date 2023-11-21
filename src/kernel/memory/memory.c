@@ -3,6 +3,7 @@
 #include "../include/type.h"
 #include "../include/utils.h"
 #include "../include/task.h"
+#include "../include/log.h"
 
 /// @brief  the physical frame allocator
 frame_allocator FRAME_ALLOCATOR;
@@ -355,6 +356,7 @@ void flush_tlb(u32 vaddr) {
 
 /// @brief initialize page mapping to MMU and enable page
 void mapping_init() {
+    info("Memory page initializing...");
     KERNEL_ROOT_PPN = allocate_physical_page_for_kernel();
     page_table_entry* root_ppn = (page_table_entry*)(KERNEL_ROOT_PPN << 12);
     memfree((void*)root_ppn, PAGE_SIZE);
@@ -375,6 +377,7 @@ void mapping_init() {
 
     set_cr3(get_paddr_from_ppn(KERNEL_ROOT_PPN));
     enable_page();
+    info("Memory page initialized successfully!");
 }
 
 /// @brief get free pages and total pages from ards, 

@@ -12,10 +12,10 @@ typedef struct spin_lock {
     wait_queue wq;
 } spin_lock;
 
-void spin_lock_init();
+void spin_lock_init(spin_lock* slock);
 
-void spin_lock_lock();
+void spin_lock_lock(spin_lock* slock);
 
-void spin_lock_unlock();
+void spin_lock_unlock(spin_lock* slock);
 
 #endif

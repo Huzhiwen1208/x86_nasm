@@ -30,7 +30,8 @@ OBJFile=test/obj.o
 EXEFile=test/exe.elf
 
 run: build
-	qemu-system-i386 -m 32M -boot c -hda image/master.img
+	qemu-system-i386 -m 32M \
+		-drive file=image/master.img,if=ide,index=0,media=disk,format=raw
 
 build: $(TARGET) $(IMG)
 
@@ -112,7 +113,8 @@ endif
 # ------- img made
 
 debug: build 
-	qemu-system-i386 -m 32M -boot c -hda image/master.img -s -S
+	qemu-system-i386 -m 32M \
+	-drive file=image/master.img,if=ide,index=0,media=disk,format=raw -s -S
 
 vmdk: $(IMG)
 	qemu-img convert -pO vmdk $< ~/Desktop/v.vmdk

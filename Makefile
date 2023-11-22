@@ -31,7 +31,8 @@ EXEFile=test/exe.elf
 
 run: build
 	qemu-system-i386 -m 32M \
-		-drive file=image/master.img,if=ide,index=0,media=disk,format=raw
+		-drive file=image/master.img,if=ide,index=0,media=disk,format=raw \
+		-drive file=image/slave.img,if=ide,index=1,media=disk,format=raw
 
 build: $(TARGET) $(IMG)
 
@@ -110,11 +111,17 @@ endif
 ifeq ($(wildcard $(IMG)),)
 	bximage -q -hd=16 -func=create -sectsize=512 -imgmode=flat $(IMG)
 endif
+ifeq ($(wildcard image/slave.img),)
+	bximage -q -hd=32 -func=create -sectsize=512 -imgmode=flat image/slave.img
+endif
+
 # ------- img made
 
 debug: build 
 	qemu-system-i386 -m 32M \
-	-drive file=image/master.img,if=ide,index=0,media=disk,format=raw -s -S
+		-drive file=image/master.img,if=ide,index=0,media=disk,format=raw \
+		-drive file=image/slave.img,if=ide,index=1,media=disk,format=raw \
+		-s -S
 
 vmdk: $(IMG)
 	qemu-img convert -pO vmdk $< ~/Desktop/v.vmdk

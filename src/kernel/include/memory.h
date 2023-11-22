@@ -62,12 +62,10 @@ void disable_page();
 void allocate_page(u32 vaddr);
 void free_page_table_recursion(u32 root_ppn);
 u32 get_cr2();
-
 void memory_init(void* ards_cnt_address);
 void mapping_init();
-
 void* buddy_alloc(u32 size);
 void buddy_heap_init();
-
 void set_tss_esp0(u32 addr);
+
 #endif

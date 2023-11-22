@@ -5,6 +5,8 @@
 #include "../include/stdio.h"
 #include "../include/lock.h"
 #include "../include/memory.h"
+#include "../include/log.h"
+#include "../include/utils.h"
 
 #define IDE_TIMEOUT 60000
 // IDE 寄存器基址
@@ -80,24 +82,6 @@
 #define IDE_LBA_SLAVE 0b11110000  // 从盘 LBA
 
 ide_control_t ide_control[IDE_CTL_COUNT];
-
-static void ide_control_init() {
-    for (i32 i = 0; i < IDE_CTL_COUNT; i++) {
-        ide_control_t* ctl = &ide_control[i];
-        sprintf(ctl->name, "ide-%d", i);
-        spin_lock_init(&ctl->slock);
-        ctl->now_disk = NULL;
-        ctl->iobase = i == 0 ? IDE_IOBASE_PRIMARY : IDE_IOBASE_SECONDARY;
-        
-        for (i32 j = 0; j < IDE_DISK_COUNT; j++) {
-            ide_disk* disk = &ctl->disks[j];
-            sprintf(disk->name, "ide-%d-%d", i, j);
-            disk->ctl = ctl;
-            disk->selector = j == 0 ? IDE_LBA_MASTER : IDE_LBA_SLAVE;
-            disk->is_master = j == 0;
-        }
-    }
-}
 
 void disk_wait(ide_control_t* ctl) {
     while (true) {
@@ -195,16 +179,53 @@ i32 ide_pio_write(ide_disk* disk, void* buf, u8 count, u32 lba) {
     return 0;
 }
 
-void ide_init() {
-    ide_control_init();
-
-    void* buf = (void*)get_paddr_from_ppn(
+static void ide_control_init() {
+    void* buf = get_paddr_from_ppn(
         allocate_physical_page_for_kernel()
     );
+    for (i32 i = 0; i < IDE_CTL_COUNT; i++) {
+        ide_control_t* ctl = &ide_control[i];
+        sprintf(ctl->name, "ide-%d", i);
+        spin_lock_init(&ctl->slock);
+        ctl->now_disk = NULL;
+        ctl->iobase = i == 0 ? IDE_IOBASE_PRIMARY : IDE_IOBASE_SECONDARY;
+        ctl->control_byte = readb(ctl->iobase + IDE_CONTROL);
 
-    ide_pio_read(&ide_control[0].disks[0], buf, 1, 0);
+        for (i32 j = 0; j < IDE_DISK_COUNT; j++) {
+            ide_disk* disk = &ctl->disks[j];
+            sprintf(disk->name, "ide-%d-%d", i, j);
+            disk->ctl = ctl;
+            disk->selector = j == 0 ? IDE_LBA_MASTER : IDE_LBA_SLAVE;
+            disk->is_master = j == 0;
 
-    ide_pio_write(&ide_control[0].disks[0], buf, 1, 1);
+            // send command: identify
+            writeb(ctl->iobase + IDE_HDDEVSEL, disk->selector);
+            ctl->now_disk = disk;
 
+            writeb(ctl->iobase + IDE_COMMAND, IDE_CMD_IDENTIFY);
+            memfree(buf, PAGE_SIZE);
+            ide_params* params = (ide_params*)buf;
+            for (i32 k = 0; k < 256; k++) {
+                u16 data = readw(ctl->iobase + IDE_DATA);
+                ((u16*)buf)[k] = data;
+            }
+
+            // check if disk exists
+            if (params->total_sector == 0) {
+                continue;
+            }
+
+            disk->total_sector = params->total_sector;
+            disk->c = params->cylinders;
+            disk->h = params->heads;
+            disk->s = params->sectors;
+            info("find disk: %s, total_sector: %d, c: %d, h: %d, s: %d",
+                disk->name, disk->total_sector, disk->c, disk->h, disk->s);
+        }
+    }
     free_physical_page(get_ppn_from_paddr_floor(buf));
+}
+
+void ide_init() {
+    ide_control_init();
 }

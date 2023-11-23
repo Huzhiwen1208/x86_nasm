@@ -51,4 +51,20 @@ i32 waitpid(i32 pid, i32* exit_code) {
     }
 }
 
+i32 read_disk_slave(void* buf, u32 count, u32 seek) {
+    return syscall(SYSCALL_READ_SLAVE, (u32)buf, count, seek);
+}
+
+i32 read_disk_master(void* buf, u32 count, u32 seek) {
+    return syscall(SYSCALL_READ_MASTER, (u32)buf, count, seek);
+}
+
+i32 write_disk_slave(void* buf, u32 count, u32 seek) {
+    return syscall(SYSCALL_WRITE_SLAVE, (u32)buf, count, seek);
+}
+
+i32 write_disk_master(void* buf, u32 count, u32 seek) {
+    return syscall(SYSCALL_WRITE_MASTER, (u32)buf, count, seek);
+}
+
 #endif

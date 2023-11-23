@@ -294,11 +294,11 @@ void keyboard_handler(int vector) {
         return;
     
     if (ctrl_state && is_lower(ch)) {
-        println("received: ^%c", ch);
+        printf("^%c", ch);
         return;
     }
     
-    println("received: %c", ch);
+    printf("%c", ch);
 }
 
 void keyboard_init()

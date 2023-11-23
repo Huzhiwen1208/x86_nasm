@@ -15,5 +15,9 @@
 #define SYSCALL_FORK 12
 #define SYSCALL_EXIT 13
 #define SYSCALL_WAITPID 14
+#define SYSCALL_READ_MASTER 15
+#define SYSCALL_READ_SLAVE 16
+#define SYSCALL_WRITE_MASTER 17
+#define SYSCALL_WRITE_SLAVE 18
 
 u32 syscall(u32 syscall_num, u32 arg1, u32 arg2, u32 arg3);

@@ -19,6 +19,7 @@ void kernel_main() {
     keyboard_init();
     buddy_heap_init();
     ide_init();
+
     task_init();
     task_test();
 }

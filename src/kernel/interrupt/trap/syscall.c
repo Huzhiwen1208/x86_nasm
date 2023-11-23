@@ -7,6 +7,7 @@
 #include "../../include/mutex.h"
 #include "../../include/fs.h"
 #include "../../include/memory.h"
+#include "../../include/device.h"
 
 /// @brief test syscall
 /// @param arg1 
@@ -98,6 +99,14 @@ u32 trap_handler(u32 syscall_num, u32 arg1, u32 arg2, u32 arg3) {
         break;
     case SYSCALL_WAITPID:
         return syscall_waitpid(arg1, (i32*)arg2);
+    case SYSCALL_READ_MASTER:
+        return device_read(1, (void*)arg1, arg2, arg3);
+    case SYSCALL_READ_SLAVE:
+        return device_read(2, (void*)arg1, arg2, arg3);
+    case SYSCALL_WRITE_MASTER:
+        return device_write(1, (void*)arg1, arg2, arg3);
+    case SYSCALL_WRITE_SLAVE:
+        return device_write(2, (void*)arg1, arg2, arg3);
     default:
         panic("Unknown syscall number: %d", syscall_num);
     }

@@ -4,21 +4,10 @@
 
 void user_thread() {
     print("entry user_thread\n");
+    void* buf = (void*)0x6400000;
+    read_disk_master(buf, 1, 0);
 
-    if (fork() == 0) {
-        u32 count = 0;
-        print("child process pid: %d, ppid: %d\n", get_pid(), get_ppid());
-        print("child process exit!!!\n");
-        exit(1);
-    } else {
-        u32 count = 0;
-        print("parent process pid: %d, ppid: %d\n", get_pid(), get_ppid());
-
-        i32 child_exit_code;
-        i32 child_pid = waitpid(-1, &child_exit_code);
-        print("child: {pid=%d} has been killed in exit code %d\n", child_pid, child_exit_code);
-    }
-    
+    write_disk_slave(buf, 1, 2);
     suspend();
 }
 

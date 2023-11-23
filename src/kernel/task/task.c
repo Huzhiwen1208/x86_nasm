@@ -381,15 +381,6 @@ void go_to_user_mode(void* user_entry) {
 extern void user_thread();
 extern void user_thread1();
 
-void thread_a() {
-    go_to_user_mode(user_thread);
-}
-
-void thread_b() {
-    asm volatile ("sti");
-    go_to_user_mode(user_thread);
-}
-
 /// @brief test the task manager
 void task_test() {
     // create_kernel_task(thread_a, get_paddr_from_ppn(allocate_physical_page_for_kernel()));

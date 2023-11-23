@@ -7,6 +7,7 @@
 #include "../include/memory.h"
 #include "../include/log.h"
 #include "../include/utils.h"
+#include "../include/device.h"
 
 #define IDE_TIMEOUT 60000
 // IDE 寄存器基址
@@ -221,11 +222,14 @@ static void ide_control_init() {
             disk->s = params->sectors;
             info("find disk: %s, total_sector: %d, c: %d, h: %d, s: %d",
                 disk->name, disk->total_sector, disk->c, disk->h, disk->s);
+            
+            install_device(DEV_BLOCK, DEV_DISK, disk, disk->name, 0, NULL, ide_pio_read, ide_pio_write);
         }
     }
     free_physical_page(get_ppn_from_paddr_floor(buf));
 }
 
 void ide_init() {
+    device_init();
     ide_control_init();
 }

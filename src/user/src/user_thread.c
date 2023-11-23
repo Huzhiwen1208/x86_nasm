@@ -5,9 +5,8 @@
 void user_thread() {
     print("entry user_thread\n");
     void* buf = (void*)0x6400000;
-    read_disk_master(buf, 1, 0);
-
-    write_disk_slave(buf, 1, 2);
+    read(buf, 10);
+    print("read: %s\n", buf);
     suspend();
 }
 

@@ -41,4 +41,8 @@
 #define IDE_CTL_COUNT 2  // the count of ide control
 #define IDE_DISK_COUNT 2 // count of disk of every ide control
 
+// FS
+#define FS_MAGIC 0x20001208
+#define INODE_PER_BLOCK 4
+
 #endif // __CONSTANT_H__

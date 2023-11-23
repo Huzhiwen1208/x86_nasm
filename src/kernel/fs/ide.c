@@ -8,6 +8,7 @@
 #include "../include/log.h"
 #include "../include/utils.h"
 #include "../include/device.h"
+#include "../include/task.h"
 
 #define IDE_TIMEOUT 60000
 // IDE 寄存器基址

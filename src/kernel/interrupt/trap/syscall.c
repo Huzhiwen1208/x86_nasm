@@ -83,6 +83,7 @@ u32 trap_handler(u32 syscall_num, u32 arg1, u32 arg2, u32 arg3) {
         spin_lock_unlock();
         break;
     case SYSCALL_WRITE:
+    case SYSCALL_READ:
         write(arg1, (char*)arg2, arg3);
         break;
     case SYSCALL_ALLOCATE:

@@ -19,4 +19,6 @@ u8 get_interrupt_status();
 
 void restore_interrupt_status(u8 status);
 
+i32 keyboard_read(char *buf, u32 len);
+
 #endif

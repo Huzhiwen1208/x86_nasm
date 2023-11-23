@@ -3,6 +3,8 @@
 #include "../include/utils.h"
 #include "../include/io.h"
 #include "../include/log.h"
+#include "../include/memory.h"
+#include "../include/interrupt.h"
 
 #define INV 0 // 不可见字符
 
@@ -222,6 +224,27 @@ static bool extcode_state;
 
 #define shift_state (keymap[KEY_SHIFT_L][2] || keymap[KEY_SHIFT_R][2])
 
+char* global_buf = NULL;
+i32 global_buf_locate = 0;
+
+i32 keyboard_read(char *buf, u32 len) {
+    u8 status = get_interrupt_status();
+    asm volatile ("sti");
+
+    global_buf = buddy_alloc(len*2);
+    while(true) {
+        if (global_buf[global_buf_locate-1] == '\n' && global_buf_locate >= len+1) {
+            break;
+        }
+    }
+    memcpy(buf, global_buf, len);
+    buddy_free(global_buf);
+    global_buf_locate = 0;
+
+    restore_interrupt_status(status);
+    return len;
+}
+
 void keyboard_handler(int vector) {
     assert(vector == 0x21);
     send_eoi(vector);
@@ -298,7 +321,10 @@ void keyboard_handler(int vector) {
         return;
     }
     
-    printf("%c", ch);
+    if (global_buf) {
+        printf("%c", ch);
+        global_buf[global_buf_locate++] = ch;
+    }
 }
 
 void keyboard_init()

@@ -4,6 +4,7 @@
 #include "../../../kernel/include/syscall.h"
 #include "../../../kernel/include/type.h"
 #include "../../../kernel/include/time.h"
+#include "../../../kernel/include/constant.h"
 
 // u32 syscall(u32 syscall_num, u32 arg1, u32 arg2, u32 arg3);
 
@@ -13,6 +14,10 @@ void sleep(u32 ms) {
 
 void yield() {
     syscall(SYSCALL_YIELD, 0, 0, 0);
+}
+
+void read(void* buf, u32 count) {
+    syscall(SYSCALL_READ, STDIN, (u32)buf, count);
 }
 
 void get_time_val(time_val* tv) {

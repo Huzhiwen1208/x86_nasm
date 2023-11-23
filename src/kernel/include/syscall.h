@@ -19,5 +19,6 @@
 #define SYSCALL_READ_SLAVE 16
 #define SYSCALL_WRITE_MASTER 17
 #define SYSCALL_WRITE_SLAVE 18
+#define SYSCALL_READ 19
 
 u32 syscall(u32 syscall_num, u32 arg1, u32 arg2, u32 arg3);

@@ -101,6 +101,7 @@ void* buddy_alloc(u32 size) {
         p = heap_allocator.free_list[p].next;
     }
     // TODO: allocate a new page
+    panic("buddy_alloc: no enough memory\n");
     return NULL;
 }
 
@@ -135,5 +136,6 @@ void buddy_free(void* ptr) {
         p = heap_allocator.free_list[p].next;
     }
 
+    ptr = NULL;
     return;
 }

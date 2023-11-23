@@ -6,6 +6,7 @@
 
 void spin_lock_lock(spin_lock* slock) {
     PCB* current = get_current_task();
+    if (current == NULL) return;
 
     u8 interrupt_status = get_interrupt_status();
     asm volatile ("cli");
@@ -35,6 +36,7 @@ void spin_lock_lock(spin_lock* slock) {
 
 void spin_lock_unlock(spin_lock* slock) {
     PCB* current = get_current_task();
+    if (current == NULL) return;
 
     u8 interrupt_status = get_interrupt_status();
     asm volatile ("cli");

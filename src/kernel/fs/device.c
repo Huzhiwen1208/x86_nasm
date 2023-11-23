@@ -62,7 +62,7 @@ device* find_device_by_id(u32 dev_num) {
 
 device* find_device_by_name(char* name) {
     for (int i = 0; i < DEVICE_MAX; i++) {
-        if (!strcmp(device_table[i].name, name)) {
+        if (strcmp(device_table[i].name, name)) {
             return &device_table[i];
         }
     }

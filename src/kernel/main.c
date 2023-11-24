@@ -10,6 +10,7 @@ extern void keyboard_init();
 extern void buddy_heap_init();
 extern void ide_init();
 extern void fs_init();
+extern void create_file(char* name);
 
 void kernel_main() {
     console_init();
@@ -21,7 +22,8 @@ void kernel_main() {
     buddy_heap_init();
     ide_init();
     fs_init();
-
-    task_init();
-    task_test();
+    create_file("test");
+    create_file("asdad");
+    // task_init();
+    // task_test();
 }

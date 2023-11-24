@@ -4,6 +4,7 @@
 #include "type.h"
 #include "device.h"
 #include "memory.h"
+#include "lock.h"
 
 typedef struct bit_map {
     u32 blocks;
@@ -43,12 +44,16 @@ typedef struct dir_entry {
     u32 inode_id;
 } dir_entry;
 
+dir_entry* new_dir_entry(char* name, u32 inode_id);
+
 typedef struct yan_fs {
     device* dev; // should be disk ide-0-1
     bit_map* inode_bitmap;
     bit_map* data_bitmap;
     u32 inode_area_start_block_id;
     u32 data_area_start_block_id;
+
+    spin_lock* slock;
 } yan_fs;
 
 yan_fs* create(device* dev, u32 total_blocks, u32 inode_bitmap_blocks);
@@ -56,8 +61,10 @@ u32 allocate_one_inode(yan_fs* fs);
 void free_one_inode(yan_fs* fs, u32 inode_id);
 u32 allocate_one_data_block(yan_fs* fs);
 void free_one_data_block(yan_fs* fs, u32 block_id);
+void create_file(char* name);
 
 i32 write(u32 fd, char* buf, u32 len);
+
 
 void fs_init();
 #endif

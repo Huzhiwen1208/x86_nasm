@@ -77,10 +77,8 @@ u32 trap_handler(u32 syscall_num, u32 arg1, u32 arg2, u32 arg3) {
         mutex_unlock();
         break;
     case SYSCALL_SPIN_LOCK:
-        spin_lock_lock();
         break;
     case SYSCALL_SPIN_UNLOCK:
-        spin_lock_unlock();
         break;
     case SYSCALL_WRITE:
     case SYSCALL_READ:

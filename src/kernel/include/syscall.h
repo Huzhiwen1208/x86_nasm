@@ -25,5 +25,6 @@
 #define SYSCALL_READFILE_LINE 22
 #define SYSCALL_WRITEFILE 23
 #define SYSCALL_LS 24
+#define SYSCALL_GETLINE 25
 
 u32 syscall(u32 syscall_num, u32 arg1, u32 arg2, u32 arg3);

@@ -422,6 +422,7 @@ void ls() {
     }
     u32 file_size = inode->size;
     if (file_size == 0) {
+        buddy_free(inode);
         return;
     }
 
@@ -429,6 +430,7 @@ void ls() {
     for (i32 i = 0; i < 27; i++) {
         u32 block_id = inode->direct[i];
         if (block_id == 0) {
+            buddy_free(inode);
             return;
         }
         u8* buf = (u8*)buddy_alloc(SECTOR_BYTE_SIZE);
@@ -444,7 +446,6 @@ void ls() {
     }
 
     // TODO indirect
-    printf("\n");
     buddy_free(inode);
 }
 

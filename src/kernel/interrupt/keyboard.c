@@ -227,6 +227,26 @@ static bool extcode_state;
 char* global_buf = NULL;
 i32 global_buf_locate = 0;
 
+char* keyboard_read_line() {
+    u8 status = get_interrupt_status();
+    asm volatile ("sti");
+
+    global_buf = buddy_alloc(1024);
+    while(true) {
+        if (global_buf_locate > 0 && global_buf[global_buf_locate-1] == '\n') {
+            break;
+        }
+    }
+    global_buf[global_buf_locate-1] = '\0';
+    char* ret = buddy_alloc(global_buf_locate);
+    memcpy(ret, global_buf, global_buf_locate);
+
+    global_buf_locate = 0;
+    buddy_free(global_buf);
+    restore_interrupt_status(status);
+    return ret;
+}
+
 i32 keyboard_read(char *buf, u32 len) {
     u8 status = get_interrupt_status();
     asm volatile ("sti");

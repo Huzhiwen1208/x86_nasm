@@ -15,6 +15,9 @@ void user_thread() {
 
     list_file();
 
+    char* line = get_line();
+    print("line: %s\n", line);
+
     suspend();
 }
 

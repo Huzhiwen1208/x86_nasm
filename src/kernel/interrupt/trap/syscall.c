@@ -118,7 +118,10 @@ u32 trap_handler(u32 syscall_num, u32 arg1, u32 arg2, u32 arg3) {
         break;
     case SYSCALL_LS:
         ls();
+        println("");
         break;
+    case SYSCALL_GETLINE:
+        return keyboard_read_line();
     default:
         panic("Unknown syscall number: %d", syscall_num);
     }

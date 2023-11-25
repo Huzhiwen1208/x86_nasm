@@ -92,4 +92,8 @@ void list_file() {
     syscall(SYSCALL_LS, 0, 0, 0);
 }
 
+char* get_line() {
+    return (char*)syscall(SYSCALL_GETLINE, 0, 0, 0);
+}
+
 #endif

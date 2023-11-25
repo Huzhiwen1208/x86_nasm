@@ -212,7 +212,7 @@ static void ide_control_init() {
                 ((u16*)buf)[k] = data;
             }
 
-            // check if disk exists
+            // check if disk find_dir_entry_by_name
             if (params->total_sector == 0) {
                 continue;
             }

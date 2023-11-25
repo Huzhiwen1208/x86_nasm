@@ -1,4 +1,5 @@
 #include "../include/fs.h"
+#include "../include/utils.h"
 #include "../include/memory.h"
 #include "../include/constant.h"
 #include "../include/ide.h"
@@ -66,11 +67,16 @@ void free_one_inode(yan_fs* fs, u32 inode_id) {
 }
 
 disk_inode* get_disk_inode_by_inode_id(yan_fs* fs, u32 inode_id) {
+    disk_inode* result = (disk_inode*)buddy_alloc(sizeof(disk_inode));
+
     disk_inode* inode = (disk_inode*)buddy_alloc(SECTOR_BYTE_SIZE);
     u32 inode_block_id = fs->inode_area_start_block_id + inode_id / INODE_PER_BLOCK;
     u32 inode_offset = inode_id % INODE_PER_BLOCK;
     fs->dev->read(fs->dev->ptr, inode, 1, inode_block_id);
-    return inode + inode_offset;
+    *result = *(inode + inode_offset);
+
+    buddy_free(inode);
+    return result;
 }
 
 void write_disk_inode_by_inode_id(yan_fs* fs, u32 inode_id, disk_inode* d_inode) {
@@ -137,7 +143,8 @@ dir_entry* find_dir_entry_by_name(char* name) {
         u8* buf = (u8*)buddy_alloc(SECTOR_BYTE_SIZE);
         fs->dev->read(fs->dev->ptr, buf, 1, block_id);
         for (i32 j = 0; j < SECTOR_BYTE_SIZE; j += sizeof(dir_entry)) {
-            dir_entry* entry = (dir_entry*)(buf + j);
+            dir_entry* buf_entry = (dir_entry*)(buf + j);
+            dir_entry* entry = new_dir_entry(buf_entry->name, buf_entry->inode_id);
             if (strcmp(entry->name, name)) {
                 buddy_free(buf);
                 return entry;
@@ -163,7 +170,8 @@ dir_entry* find_dir_entry_by_name(char* name) {
         u8* buf = (u8*)buddy_alloc(SECTOR_BYTE_SIZE);
         fs->dev->read(fs->dev->ptr, buf, 1, block_id);
         for (i32 j = 0; j < SECTOR_BYTE_SIZE; j += sizeof(dir_entry)) {
-            dir_entry* entry = (dir_entry*)(buf + j);
+            dir_entry* buf_entry = (dir_entry*)(buf + j);
+            dir_entry* entry = new_dir_entry(buf_entry->name, buf_entry->inode_id);
             if (strcmp(entry->name, name) == 0) {
                 buddy_free(buf);
                 return entry;
@@ -196,7 +204,8 @@ dir_entry* find_dir_entry_by_name(char* name) {
             u8* buf = (u8*)buddy_alloc(SECTOR_BYTE_SIZE);
             fs->dev->read(fs->dev->ptr, buf, 1, block_id);
             for (i32 k = 0; k < SECTOR_BYTE_SIZE; k += sizeof(dir_entry)) {
-                dir_entry* entry = (dir_entry*)(buf + k);
+                dir_entry* buf_entry = (dir_entry*)(buf + j);
+                dir_entry* entry = new_dir_entry(buf_entry->name, buf_entry->inode_id);
                 if (strcmp(entry->name, name) == 0) {
                     buddy_free(buf);
                     return entry;
@@ -247,15 +256,149 @@ void append_dir_entry(dir_entry* entry) {
         *empty_entry = *entry;
         fs->dev->write(fs->dev->ptr, buf, 1, block_id);
         buddy_free(buf);
+        write_disk_inode_by_inode_id(fs, 0, inode);
+        return;
     }
 
     // TODO: indirect
 }
 
+u32 file_size(char* name) {
+    dir_entry* entry = find_dir_entry_by_name(name);
+    if (entry == NULL) {
+        error("file [%s] not found", name);
+        return 0;
+    }
+    disk_inode* inode = get_disk_inode_by_inode_id(fs, entry->inode_id);
+    u32 size = inode->size;
+
+    buddy_free(entry);
+    buddy_free(inode);
+    return size;
+}
+
+char* read_file(char* name) {
+    char* result = (char*)buddy_alloc(file_size(name));
+
+    dir_entry* entry = find_dir_entry_by_name(name);
+    if (entry == NULL) {
+        error("file [%s] not found", name);
+        return NULL;
+    }
+
+    disk_inode* inode = get_disk_inode_by_inode_id(fs, entry->inode_id);
+    u32 size = inode->size;
+    u32 blocks = (size + SECTOR_BYTE_SIZE - 1) / SECTOR_BYTE_SIZE;
+    u32 offset = (size % SECTOR_BYTE_SIZE) / sizeof(dir_entry);
+
+    if (blocks == 0) {
+        return NULL;
+    }
+
+    if (blocks <= 27) {
+        for (i32 i = 0; i < blocks; i++) {
+            u32 block_id = inode->direct[i];
+            assert(block_id);
+            u8* buf = (u8*)buddy_alloc(SECTOR_BYTE_SIZE);
+            fs->dev->read(fs->dev->ptr, buf, 1, block_id);
+            if (i == blocks - 1) {
+                memcpy(result+i*SECTOR_BYTE_SIZE, buf, size % SECTOR_BYTE_SIZE);
+            } else {
+                memcpy(result+i*SECTOR_BYTE_SIZE, buf, SECTOR_BYTE_SIZE);
+            }
+            buddy_free(buf);
+        }
+    }
+
+    return result;
+    // TODO: indirect
+}
+
+char* read_line(char* name) {
+    char* result = (char*)buddy_alloc(1024);
+
+    char* file_content = read_file(name);
+
+    if (file_content == NULL) {
+        return NULL;
+    }
+
+    for (i32 i = 0; i < 1024 && i < length(file_content); i++) {
+        if (file_content[i] == '\n') {
+            result[i] = '\0';
+            return result;
+        }
+        result[i] = file_content[i];
+    }
+
+    buddy_free(file_content);
+    return result;
+}
+
+void clear_file(char* name) {
+    dir_entry* entry = find_dir_entry_by_name(name);
+    if (entry == NULL) {
+        error("file [%s] not found", name);
+        return;
+    }
+
+    disk_inode* inode = get_disk_inode_by_inode_id(fs, entry->inode_id);
+    u32 size = inode->size;
+    u32 blocks = (size + SECTOR_BYTE_SIZE - 1) / SECTOR_BYTE_SIZE;
+    u32 offset = (size % SECTOR_BYTE_SIZE) / sizeof(dir_entry);
+
+    if (blocks == 0) {
+        return;
+    }
+
+    if (blocks <= 27) {
+        for (i32 i = 0; i < blocks; i++) {
+            u32 block_id = inode->direct[i];
+            assert(block_id);
+            free_one_data_block(fs, block_id);
+        }
+    }
+
+    // TODO: indirect
+    disk_inode* new = new_empty_disk_inode();
+    *inode = *new;
+    write_disk_inode_by_inode_id(fs, entry->inode_id, inode);
+
+    buddy_free(new);
+    buddy_free(entry);
+    buddy_free(inode);
+}
+
+void write_file(char* name, char* buf, u32 len) {
+    dir_entry* entry = find_dir_entry_by_name(name);
+    if (entry == NULL) {
+        error("file [%s] not found", name);
+        return;
+    }
+
+    clear_file(name);
+
+    disk_inode* inode = get_disk_inode_by_inode_id(fs, entry->inode_id);
+    u32 size = inode->size;
+    u32 blocks = (size + SECTOR_BYTE_SIZE - 1) / SECTOR_BYTE_SIZE;
+    u32 offset = (size % SECTOR_BYTE_SIZE) / sizeof(dir_entry);
+
+    inode->direct[0] = allocate_one_data_block(fs);
+    u8* buf_ = (u8*)buddy_alloc(SECTOR_BYTE_SIZE);
+    memcpy(buf_, buf, len);
+    fs->dev->write(fs->dev->ptr, buf_, 1, inode->direct[0]);
+    inode->size = len;
+    write_disk_inode_by_inode_id(fs, entry->inode_id, inode);
+
+    buddy_free(buf_);
+    buddy_free(entry);
+    return;
+}
+
 void create_file(char* name) {
     dir_entry* entry = find_dir_entry_by_name(name);
     if (entry != NULL) {
-        error("file already exists");
+        error("file [%s] already exists", name);
         return;
     }
 
@@ -266,7 +409,43 @@ void create_file(char* name) {
 
     dir_entry* new_entry = new_dir_entry(name, inode_id);
     append_dir_entry(new_entry);
+
     buddy_free(new_entry);
+    buddy_free(inode);
+    buddy_free(entry);
+}
+
+void ls() {
+    disk_inode* inode = get_disk_inode_by_inode_id(fs, 0);
+    if (inode->type != FILE_TYPE_DIR) {
+        panic("not a directory");
+    }
+    u32 file_size = inode->size;
+    if (file_size == 0) {
+        return;
+    }
+
+    u32 blocks = (file_size + SECTOR_BYTE_SIZE - 1) / SECTOR_BYTE_SIZE;
+    for (i32 i = 0; i < 27; i++) {
+        u32 block_id = inode->direct[i];
+        if (block_id == 0) {
+            return;
+        }
+        u8* buf = (u8*)buddy_alloc(SECTOR_BYTE_SIZE);
+        fs->dev->read(fs->dev->ptr, buf, 1, block_id);
+        for (i32 j = 0; j < SECTOR_BYTE_SIZE; j += sizeof(dir_entry)) {
+            dir_entry* buf_entry = (dir_entry*)(buf + j);
+            if (buf_entry->inode_id == 0) {
+                continue;
+            }
+            printf("%s ", buf_entry->name);
+        }
+        buddy_free(buf);
+    }
+
+    // TODO indirect
+    printf("\n");
+    buddy_free(inode);
 }
 
 yan_fs* create(device* dev, u32 total_blocks, u32 inode_bitmap_blocks) {

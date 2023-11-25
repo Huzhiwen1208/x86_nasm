@@ -62,9 +62,13 @@ void free_one_inode(yan_fs* fs, u32 inode_id);
 u32 allocate_one_data_block(yan_fs* fs);
 void free_one_data_block(yan_fs* fs, u32 block_id);
 void create_file(char* name);
-
+u32 file_size(char* name);
+char* read_file(char* name);
+char* read_line(char* name);
+void clear_file(char* name);
+void write_file(char* name, char* buf, u32 len);
 i32 write(u32 fd, char* buf, u32 len);
-
-
 void fs_init();
+
+
 #endif

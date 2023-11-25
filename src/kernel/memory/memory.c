@@ -164,6 +164,35 @@ u32 allocate_physical_page_for_kernel() {
             return i;
         }
     }
+
+    panic("No free physical page!");
+}
+
+u32 allocate_physical_page_for_kernel_continuously(u32 count) {
+    if (FRAME_ALLOCATOR.free_pages < count) {
+        panic("No free physical page!");
+    }
+
+    for (i32 i = 0; i < MAX_PAGES; i++) {
+        if (is_belong_kernel(i) && !is_in_using(i)) {
+            i32 j = 0;
+            for (; j < count; j++) {
+                if (is_in_using(i + j)) {
+                    break;
+                }
+            }
+            if (j == count) {
+                for (j = 0; j < count; j++) {
+                    set_in_using(i + j);
+                    FRAME_ALLOCATOR.free_pages--;
+                    FRAME_ALLOCATOR.kernel_free_pages--;
+                    memfree(get_paddr_from_ppn(i + j), PAGE_SIZE);
+                }
+                return i;
+            }
+        }
+    }
+    panic("No free physical page!");
 }
 
 static void show_physical_pages() {

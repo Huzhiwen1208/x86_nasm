@@ -34,7 +34,7 @@ run: build
 		-drive file=image/master.img,if=ide,index=0,media=disk,format=raw \
 		-drive file=image/slave.img,if=ide,index=1,media=disk,format=raw
 
-build: clean $(TARGET) $(IMG)
+build: $(TARGET) $(IMG)
 
 .PHONY: $(TARGET)
 $(TARGET):

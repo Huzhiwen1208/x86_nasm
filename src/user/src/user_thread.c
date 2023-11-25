@@ -4,9 +4,17 @@
 
 void user_thread() {
     print("entry user_thread\n");
-    void* buf = (void*)0x6400000;
-    read(buf, 10);
-    print("read: %s\n", buf);
+    create_file_trunc("test.txt");
+    write_file_trunc("test.txt", "hello world\n", 12);
+
+    create_file_trunc("test2.txt");
+    write_file_trunc("test2.txt", "hello world2\n", 13);
+
+    create_file_trunc("test3.txt");
+    write_file_trunc("test3.txt", "hello world3\n", 13);
+
+    list_file();
+
     suspend();
 }
 

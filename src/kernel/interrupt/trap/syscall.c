@@ -106,6 +106,19 @@ u32 trap_handler(u32 syscall_num, u32 arg1, u32 arg2, u32 arg3) {
         return device_write(1, (void*)arg1, arg2, arg3);
     case SYSCALL_WRITE_SLAVE:
         return device_write(2, (void*)arg1, arg2, arg3);
+    case SYSCALL_TOUCH:
+        create_file((char*)arg1);
+        break;
+    case SYSCALL_READFILE:
+        return read_file((char*)arg1);
+    case SYSCALL_READFILE_LINE:
+        return read_line((char*)arg1);
+    case SYSCALL_WRITEFILE:
+        write_file((char*)arg1, (char*)arg2, arg3);
+        break;
+    case SYSCALL_LS:
+        ls();
+        break;
     default:
         panic("Unknown syscall number: %d", syscall_num);
     }

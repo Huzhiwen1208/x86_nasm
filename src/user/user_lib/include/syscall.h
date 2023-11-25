@@ -72,4 +72,24 @@ i32 write_disk_master(void* buf, u32 count, u32 seek) {
     return syscall(SYSCALL_WRITE_MASTER, (u32)buf, count, seek);
 }
 
+void write_file_trunc(char* name, char* buf, u32 len) {
+    syscall(SYSCALL_WRITEFILE, (u32)name, (u32)buf, len);
+}
+
+void create_file_trunc(char* name) {
+    syscall(SYSCALL_TOUCH, (u32)name, 0, 0);
+}
+
+char* read_line_file(char* name) {
+    return (char*)syscall(SYSCALL_READFILE_LINE, (u32)name, 0, 0);
+}
+
+char* read_file_c(char* name) {
+    return (char*)syscall(SYSCALL_READFILE, (u32)name, 0, 0);
+}
+
+void list_file() {
+    syscall(SYSCALL_LS, 0, 0, 0);
+}
+
 #endif

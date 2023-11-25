@@ -42,9 +42,9 @@ static void make_heap_block(heap_block* block, i32 index) {
 
 void buddy_heap_init() {
     u32 base = get_paddr_from_ppn(
-        allocate_physical_page_for_kernel()
+        allocate_physical_page_for_kernel_continuously(10)
     );
-    heap_allocator.total_size = PAGE_SIZE;
+    heap_allocator.total_size = PAGE_SIZE * 10;
     i32 block_idx = new_heap_block();
     heap_block* block = &heap_allocator.free_list[block_idx];
     block->base = base;
@@ -54,7 +54,7 @@ void buddy_heap_init() {
     block_idx = new_heap_block();
     block = &heap_allocator.free_list[block_idx];
     block->base = base;
-    block->size = PAGE_SIZE;
+    block->size = PAGE_SIZE * 10;
     block->next = -1;
 }
 
